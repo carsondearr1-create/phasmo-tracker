@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phasmophobia Ghost Tracker & Intel Sheet</title>
+    <style>
+        :root {
+            --bg-color: #0c0c0e;
+            --panel-bg: #16161a;
+            --text-color: #e2e8f0;
+            --text-dim: #94a3b8;
+            --accent-found: #22c55e;
+            --accent-rejected: #ef4444;      
+            --border-color: #2d3748;  
+            --intel-bg: #1e1e24;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 1100px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            letter-spacing: 3px;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cbd5e1;
+        }
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .evidence-btn {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 15px 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .evidence-btn.found {
+            background-color: rgba(34, 197, 94, 0.15);
+            border-color: var(--accent-found);
+            color: #4ade80;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+        }
+        .evidence-btn.rejected {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-color: var(--accent-rejected);
+            color: #f87171;
+            text-decoration: line-through;
+        }
+        .reset-bar {
+            text-align: right;
+            margin-bottom: 25px;
+        }
+        .reset-btn {
+            background-color: #2d3748;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .reset-btn:hover { background-color: #4a5568; }
+        .ghost-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
+        }
+        .ghost-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .ghost-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        .ghost-evidence {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            list-style: none;
+            padding: 0;
+            margin: 0 0 15px 0;
+        }
+        .ghost-evidence li {
+            margin-bottom: 4px;
+        }
+        .intel-btn {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: background 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .intel-btn:hover {
+            background-color: #4a5568;
+        }
+        .intel-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background-color: var(--intel-bg);
+            border-left: 3px solid #64748b;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .intel-box ul {
+            margin: 0;
+            padding-left: 15px;
+        }
+        .intel-box li {
+            margin-bottom: 6px;
+        }
+        .ghost-card.excluded {
+            opacity: 0.12;
+            transform: scale(0.96);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>EVIDENCE JOURNAL</h1>
+    <div class="subtitle">Click 1x if Found [✔️] | Click 2x to Cross Out [❌]</div>
+    <div style="color: #cbd5e1; font-size: 0.95rem; margin-top: -15px; margin-bottom: 25px; max-width: 600px; line-height: 1.5;">
+        <strong>How to use:</strong> Tap evidence buttons once to mark them found (Green), twice to cross them out (Red), or a third time to clear them. Impossible ghosts will fade away automatically to help you quickly identify the entity.
+    </div>
+
+    <div class="section-title">Evidence Panel</div>
+    <div class="evidence-grid" id="evidenceGrid"></div>
+    <div class="reset-bar">
+        <button class="reset-btn" id="resetBtn">Reset Tracker</button>
+    </div>
+    <div class="section-title">Matching Ghosts</div>
+    <div class="ghost-grid" id="ghostGrid"></div>
+</div>
+<script>
+    const evidences = ["EMF Level 5", "Ultraviolet", "Freezing Temps", "Ghost Orb", "Ghost Writing", "Spirit Box", "D.O.T.S. Projector"];
+    const ghosts = [
+        { name: "Aswang", evidence: ["Ultraviolet", "Ghost Writing", "EMF Level 5"], intel: ["Hunts at 50% sanity.", "Will immediately end hunt if they enter an official hiding spot.", "Walks towards the player that was in that spot immediately after."] },
+        { name: "Banshee", evidence: ["Ultraviolet", "Ghost Orb", "D.O.T.S. Projector"], intel: ["Always Female.", "Hunts at 50% target sanity. Selects a random target first hunt, lobby host second hunt, then down room arrival order.", "Prefers 'singing events'. Can wail/sing on Parabolic Mic/Sound Recorder (20 variants).", "Will only roam at their target on DOTS."] },
+        { name: "Dayan", evidence: ["D.O.T.S. Projector", "Ghost Orb", "EMF Level 5"], intel: ["Always Female.", "Hunt duration and speed are determined entirely by player speed and closeness.", "Can hunt at 65% sanity, drops to 44% when a player is in closer range."] },
+        { name: "Demon", evidence: ["Ultraviolet", "Freezing Temps", "Ghost Writing"], intel: ["Hunts starting at 70% sanity. Can trigger instantly upon entry.", "May completely ignore the typical hunt cooldown or incense safety timers."] },
+        { name: "Deogen", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S. Projector"], intel: ["Hunts at 40% sanity.", "Insanely fast; impossible to hide from. Must use utility items or loop to break line of sight.", "Guaranteed Spirit Box response even on 0-evidence difficulty."] },
+{ name: "Deildegast", evidence: ["EMF Level 5", "Ghost Writing", "D.O.T.S. Projector"], intel: ["Special Ability: There is a speed decrease of 0.1m/s for each unique non-equipment item picked up or interacted with by players (alive or dead) since the last hunt or hunt attempt.", "Hunt: They hunt at 3.0m/s."] },
+        { name: "Gallu", evidence: ["EMF Level 5", "Freezing Temps", "Ghost Writing"], intel: ["Hunts at 50% sanity.", "Has 3 behavior phases: Normal, Enraged, and Weakened.", "Can hunt directly on top of a Tier 1 Crucifix placed on the ground.", "The only ghost that leaves more than 4 footsteps after stepping in salt."] },
+        { name: "Goryo", evidence: ["EMF Level 5", "Ultraviolet", "D.O.T.S. Projector"], intel: ["Cannot change its favorite room.", "Will never show DOTS traits in person; only viewable via video camera monitor.", "Guaranteed DOTS evidence even on Nightmare/Custom limited evidence rules."] },
+        { name: "Hantu", evidence: ["Ultraviolet", "Freezing Temps", "Ghost Orb"], intel: ["Power heavily tied to cold rooms. Cannot turn the breaker panel ON.", "Displays visible freezing breath vapors during active hunts.", "Speed scales up in cold rooms; highly prone to turning breakers OFF.", "Guaranteed Freezing Temps on 0-evidence configs."] },
+        { name: "Jinn", evidence: ["EMF Level 5", "Ultraviolet", "Freezing Temps"], intel: ["Hidden trait: Cannot turn the breaker panel OFF.", "Zaps sanity if sharing a room with a player while the breaker is active. Dropping sanity by 25% registers an EMF 2 or 5 on a held reader."] },
+        { name: "Mare", evidence: ["Freezing Temps", "Ghost Orb", "Spirit Box"], intel: ["They hate the light.", "Hunt: They can hunt at 60% sanity in the dark and 40% sanity in the light.", "Prefers turning off lights and bursting events.", "Can interact with the lights on/off during events. This is the only ghost able to do so."] },
+        { name: "Moroi", evidence: ["Spirit Box", "Freezing Temps", "Ghost Writing"], intel: ["Curses players who receive an audio response via Box, Parabolic, or Recorder. Curse doubles passive sanity drain speed.", "Speeds up dynamically as global team sanity drains lower."] },
+        { name: "Myling", evidence: ["EMF Level 5", "Ultraviolet", "Ghost Writing"], intel: ["Produces distinct sounds/vocalizations through Parabolic Mics and Sound Recorders much more frequently than other entities.", "Steps are completely silent during hunts until they are very close to you."] },
+        { name: "Obambo", evidence: ["Ghost Orb", "Spirit Box", "EMF Level 5"], intel: ["Cycles back and forth between a calm state and an aggressive state every 2 minutes.", "Moves significantly faster when running in its aggressive state."] },
+{ name: "Obake", evidence: ["EMF Level 5", "Ultraviolet", "Ghost Orb"], intel: ["Has a chance to leave a unique 6-fingered handprint when UV is checked.", "Shapeshifts/flickers forms multiple times during a hunt flash/blink.", "25% chance to skip leaving UV evidence on surfaces.", "Follows rigid gendered shifting loops (e.g., Male: Butcher->Fisher->Greybeard->Nerd; Female: Child->Grandma->Patient07->Woman)."] },
+{ name: "Oni", evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S. Projector"], intel: ["Drains 20% team sanity during physical manifestations instead of the base 10%.", "Will never manifest as a smoky 'ghost mist' event."] },
+{ name: "Onryo", evidence: ["Freezing Temps", "Ghost Orb", "Spirit Box"], intel: ["Cannot ignite or light fire sources.", "Will aggressively attempt to trigger a hunt at any sanity percentage immediately after extinguishing 3 total firelights."] },
+{ name: "Phantom", evidence: ["Ultraviolet", "Spirit Box", "D.O.T.S. Projector"], intel: ["Will never show up directly inside ghost photos or video frames.", "Taking a photo forces them to temporarily vanish.", "Roams directly toward alive (and due to a bug, dead) players, creating an EMF 2 baseline."] },
+{ name: "Poltergeist", evidence: ["Ultraviolet", "Ghost Writing", "Spirit Box"], intel: ["Throws multiple environment objects entirely simultaneously (Mimic/Twins can mimic this).", "Throws items harder and far more frequently during active hunt states."] },
+{ name: "Raiju", evidence: ["EMF Level 5", "Ghost Orb", "D.O.T.S. Projector"], intel: ["Alters and disrupts electronic equipment from much further distances.", "Can initiate hunts early at 65% sanity if near active player gear."] },
+{ name: "Revenant", evidence: ["Freezing Temps", "Ghost Orb", "Ghost Writing"], intel: ["Base hunting movement speed is extremely slow.", "Instantly accelerates to a lethal 3.0 m/s the absolute second it detects a player's location or voice."] },
+{ name: "Shade", evidence: ["EMF Level 5", "Freezing Temps", "Ghost Writing"], intel: ["Extremely passive. Hunts at 35% sanity.", "Will never throw items, do events, or hunt if a player is in the exact same room.", "Much higher affinity for ghost mist manifestations outside player rooms."] },
+{ name: "Spirit", evidence: ["EMF Level 5", "Ghost Writing", "Spirit Box"], intel: ["Smudging the ghost safely prevents it from starting any new hunts for a guaranteed 180 seconds minimum."] },
+{ name: "Thaye", evidence: ["Ghost Orb", "Ghost Writing", "D.O.T.S. Projector"], intel: ["Ages every 1-2 minutes. Only ghost to return an age response of 90+ on Ouija boards.", "Starts incredibly aggressive (hunts at 75% sanity, fast) and decays to weak (hunts at 15% sanity, slow)."] },
+{ name: "The Mimic", evidence: ["Ultraviolet", "Freezing Temps", "Spirit Box"], intel: ["Guaranteed to display Ghost Orbs as a 4th secondary trait even on 0-evidence rulesets.", "Copies different ghost layouts and abilities every 30-120 seconds.", "Lobby host can identify the true Mimic form, whereas other players perceive it as a regular Spirit/Shade frame."] },
+{ name: "The Twins", evidence: ["EMF Level 5", "Freezing Temps", "Spirit Box"], intel: ["Can interact with two separate objects in different locations simultaneously.", "Can trigger actions on two entirely different floors at the exact same moment."] },
+{ name: "Wraith", evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S. Projector"], intel: ["Will never touch, step in, or interact with placed salt lines.", "Can teleport directly onto a player's coordinates, changing rooms and casting an EMF 2 trail."] },
+{ name: "Yokai", evidence: ["Ghost Orb", "Spirit Box", "D.O.T.S. Projector"], intel: ["Highly sensitive to voice chat nearby, unlocking early hunt capabilities.", "Triggers ghost events much closer to a music box (within 2.5m). Thrown music boxes spark events."] },
+{ name: "Yurei", evidence: ["Freezing Temps", "Ghost Orb", "D.O.T.S. Projector"], intel: ["The only entity that can fully slam or manipulate facility exit doors outside of events/hunts.", "Interactions fully open or snap doors shut. Snapping doors closed heavily drops nearby player sanity."] }
+];
+
+const evidenceState = {};
+evidences.forEach(e => evidenceState[e] = "neutral");
+
+const evidenceGrid = document.getElementById('evidenceGrid');
+const ghostGrid = document.getElementById('ghostGrid');
+const resetBtn = document.getElementById('resetBtn');
+
+function createEvidenceButtons() {
+    evidenceGrid.innerHTML = '';
+    evidences.forEach(ev => {
+        const btn = document.createElement('button');
+        btn.className = 'evidence-btn';
+        btn.textContent = ev;
+        btn.addEventListener('click', () => toggleEvidence(ev, btn));
+        evidenceGrid.appendChild(btn);
+    });
+}
+
+function toggleEvidence(ev, btn) {
+    if (evidenceState[ev] === "neutral") {
+        evidenceState[ev] = "found";
+        btn.className = 'evidence-btn found';
+    } else if (evidenceState[ev] === "found") {
+        evidenceState[ev] = "rejected";
+        btn.className = 'evidence-btn rejected';
+    } else {
+        evidenceState[ev] = "neutral";
+        btn.className = 'evidence-btn';
+    }
+    filterGhosts();
+}
+
+function createGhostCards() {
+    ghostGrid.innerHTML = '';
+    ghosts.sort((a,b) => a.name.localeCompare(b.name)).forEach(ghost => {
+        const card = document.createElement('div');
+        card.className = 'ghost-card';
+        card.id = 'ghost-' + ghost.name.replace(/\s+/g, '');
+
+        const mainContent = document.createElement('div');
+
+        const name = document.createElement('div');
+        name.className = 'ghost-name';
+        name.textContent = ghost.name;
+
+        const list = document.createElement('ul');
+        list.className = 'ghost-evidence';
+        ghost.evidence.forEach(e => {
+            const item = document.createElement('li');
+            item.textContent = '• ' + e;
+            list.appendChild(item);
+        });
+
+        mainContent.appendChild(name);
+        mainContent.appendChild(list);
+        card.appendChild(mainContent);
+
+        const intelBtn = document.createElement('button');
+        intelBtn.className = 'intel-btn';
+        intelBtn.textContent = 'View Intel';
+        intelBtn.onclick = () => {
+            const box = card.querySelector('.intel-box');
+            const isOpen = box.style.display === 'block';
+            box.style.display = isOpen ? 'none' : 'block';
+            intelBtn.textContent = isOpen ? 'View Intel' : 'Hide Intel';
+        };
+        card.appendChild(intelBtn);
+
+        const intelBox = document.createElement('div');
+        intelBox.className = 'intel-box';
+        const intelList = document.createElement('ul');
+        ghost.intel.forEach(fact => {
+            const bullet = document.createElement('li');
+            bullet.textContent = fact;
+            intelList.appendChild(bullet);
+        });
+        intelBox.appendChild(intelList);
+        card.appendChild(intelBox);
+
+        ghostGrid.appendChild(card);
+    });
+}
+
+function filterGhosts() {
+    ghosts.forEach(ghost => {
+        const card = document.getElementById('ghost-' + ghost.name.replace(/\s+/g, ''));
+        let isExcluded = false;
+
+        for (const [ev, state] of Object.entries(evidenceState)) {
+            if (state === "found" && !ghost.evidence.includes(ev)) {
+                if (ghost.name === "The Mimic" && ev === "Ghost Orb") continue;
+                isExcluded = true;
+                break;
+            }
+            if (state === "rejected" && ghost.evidence.includes(ev)) {
+                isExcluded = true;
+                break;
+            }
+        }
+
+        if (isExcluded) {
+            card.classList.add('excluded');
+        } else {
+            card.classList.remove('excluded');
+        }
+    });
+}
+
+resetBtn.addEventListener('click', () => {
+    evidences.forEach(e => evidenceState[e] = "neutral");
+    createEvidenceButtons();
+    filterGhosts();
+});
+
+createEvidenceButtons();
+createGhostCards();
+</script>
+</body>
+</html>
