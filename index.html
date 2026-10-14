@@ -465,15 +465,56 @@
         }
         .ghost-speed strong { display: block; color: #c4b5fd; margin-bottom: 3px; }
 
+/* Dashboard visual refresh — preserves existing ghost and evidence logic */
+.tracker-header {text-align:center; padding:28px 18px 32px; margin-bottom:26px; border:1px solid #2c3140; border-radius:14px; background:linear-gradient(145deg,#1a1c27,#101116 72%);}
+.header-eyebrow {color:#a5b4fc;font-size:.7rem;letter-spacing:2px;font-weight:bold;margin-bottom:10px}
+.tracker-header h1 {margin:0;font-size:clamp(1.5rem,3.3vw,2.4rem);letter-spacing:3px}
+.header-subtitle {color:#9da8bb;font-size:.77rem;letter-spacing:1px;margin:12px 0 18px}
+.header-pills {display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.header-pills span {border:1px solid #3b4150;background:#232631;color:#cbd5e1;border-radius:100px;padding:5px 12px;font-size:.73rem}
+.header-help {max-width:670px;margin:18px auto 0;color:#aab5c6;line-height:1.65;font-size:.8rem}
+.found-text {color:#4ade80}.rejected-text {color:#f87171}
+.sidebar {border-radius:12px;box-shadow:0 8px 28px #0003}
+.sidebar .evidence-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sidebar .evidence-btn {padding:12px 7px;min-height:48px;font-size:.78rem;line-height:1.25;overflow-wrap:anywhere}
+.sidebar .reset-bar {margin-bottom:26px}
+.sidebar .tool-tab.active {color:#93c5fd;border-color:#60a5fa;background:rgba(96,165,250,.13)}
+.sidebar .checklist-item:has(input:checked) {border-color:#60a5fa;background:rgba(96,165,250,.08)}
+.sidebar .checklist-item input {accent-color:#60a5fa}
+.sidebar .checklist-progress {grid-column:1/-1;color:#93c5fd;font-weight:bold;margin:0}
+.checklist-progress-track {grid-column:1/-1;height:6px;background:#303645;border-radius:999px;overflow:hidden;margin-bottom:5px}
+.checklist-progress-track span {display:block;height:100%;width:0;background:#60a5fa;border-radius:999px;transition:width .2s}
+.matches-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.matches-heading .section-title {flex:1;margin-bottom:10px}
+.match-count {font-size:.8rem;color:#93c5fd;border:1px solid #334155;padding:5px 10px;border-radius:999px;white-space:nowrap}
+.match-progress {height:6px;background:#303645;border-radius:999px;overflow:hidden;margin:0 0 19px}
+.match-progress span {display:block;width:100%;height:100%;background:#60a5fa;transition:width .2s}
+.main-panel .ghost-grid {grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}
+.ghost-card {border-radius:10px;gap:12px;padding:16px;box-shadow:0 5px 16px #0002}
+.ghost-card-header {display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ghost-card-header .ghost-name {margin:0}
+.ghost-status {border:1px solid #485265;border-radius:99px;color:#aeb8c9;font-size:.66rem;padding:4px 7px;white-space:nowrap}
+.ghost-card.excluded .ghost-status {color:#fca5a5}
+.ghost-speed {border-color:#6d4c9c!important;background:#261f36!important;border-radius:8px!important;padding:12px!important;margin:12px 0!important;color:#e2d8f5!important}
+.ghost-speed strong {color:#c4b5fd!important;font-size:.77rem;letter-spacing:.4px;text-transform:uppercase}
+.evidence-label {color:#94a3b8;font-size:.7rem;font-weight:bold;letter-spacing:1px;margin-bottom:7px}
+.ghost-evidence {display:flex;flex-wrap:wrap;gap:6px;margin-bottom:0}
+.ghost-evidence li {background:#292d37;border:1px solid #3a4050;color:#d6dfeb;padding:5px 7px;border-radius:6px;font-size:.74rem;margin:0}
+.intel-btn {margin-top:2px;background:#303645;border-radius:7px;padding:10px}
+.intel-box {max-height:280px}
+@media(max-width:850px){.sidebar .evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.tracker-header{padding:22px 12px}.main-panel .ghost-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="container">
-    <h1>EVIDENCE JOURNAL</h1>
-    <div class="subtitle">Click 1x if Found [✔️] | Click 2x to Cross Out [❌]</div>
-    <div style="color: #cbd5e1; font-size: 0.95rem; margin-top: -15px; margin-bottom: 25px; max-width: 600px; line-height: 1.5;">
-        <strong>How to use:</strong> Tap evidence buttons once to mark them found (Green), twice to cross them out (Red), or a third time to clear them. Impossible ghosts will fade away automatically to help you quickly identify the entity.
-    </div>
+    <header class="tracker-header">
+  <div class="header-eyebrow">UNOFFICIAL INVESTIGATION DASHBOARD</div>
+  <h1>☽ PHASMO TRACKER</h1>
+  <p class="header-subtitle">GHOST EVIDENCE · HUNT INTEL · INVESTIGATION TOOLS</p>
+  <div class="header-pills"><span>30 Ghosts</span><span>Fan-Made</span><span>October 2026 Intel</span></div>
+  <p class="header-help">Tap evidence once for <b class="found-text">found</b>, twice for <b class="rejected-text">ruled out</b>, and a third time to clear it. Ghosts that don't match fade away.</p>
+</header>
 
 <div class="tracker-layout">
     <aside class="sidebar">
@@ -529,7 +570,8 @@
     </aside>
 
     <main class="main-panel">
-        <div class="section-title">Matching Ghosts</div>
+        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span></div>
+        <div class="match-progress" role="progressbar" aria-label="Ghosts still possible" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30" id="matchProgress"><span id="matchProgressFill"></span></div>
         <div class="ghost-grid" id="ghostGrid"></div>
     </main>
 </div>
@@ -876,6 +918,11 @@ function renderChecklist(container, items, state, statePrefix) {
     progress.className = "checklist-progress";
     progress.setAttribute("aria-live", "polite");
     container.appendChild(progress);
+    const progressTrack = document.createElement('div');
+    progressTrack.className = 'checklist-progress-track';
+    const progressFill = document.createElement('span');
+    progressTrack.appendChild(progressFill);
+    container.appendChild(progressTrack);
 
     items.forEach((item, index) => {
         const key = statePrefix + index;
@@ -929,6 +976,7 @@ function renderChecklist(container, items, state, statePrefix) {
 
         progress.textContent =
             `${completed} of ${items.length} checked`;
+        progressFill.style.width = `${Math.round(100 * completed / items.length)}%`;
     }
 
     updateProgress();
@@ -1029,12 +1077,18 @@ function createGhostCards() {
         const name = document.createElement('div');
         name.className = 'ghost-name';
         name.textContent = ghost.name;
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'ghost-card-header';
+        const status = document.createElement('span');
+        status.className = 'ghost-status';
+        status.textContent = 'Possible';
+        cardHeader.append(name, status);
 
         const list = document.createElement('ul');
         list.className = 'ghost-evidence';
         ghost.evidence.forEach(e => {
             const item = document.createElement('li');
-            item.textContent = '• ' + e;
+            item.textContent = e;
             list.appendChild(item);
         });
 
@@ -1047,19 +1101,23 @@ function createGhostCards() {
         speed.appendChild(speedHeading);
         speed.appendChild(speedDetails);
 
-        mainContent.appendChild(name);
+        mainContent.appendChild(cardHeader);
         mainContent.appendChild(speed);
+        const evidenceLabel = document.createElement('div');
+        evidenceLabel.className = 'evidence-label';
+        evidenceLabel.textContent = 'EVIDENCE';
+        mainContent.appendChild(evidenceLabel);
         mainContent.appendChild(list);
         card.appendChild(mainContent);
 
         const intelBtn = document.createElement('button');
         intelBtn.className = 'intel-btn';
-        intelBtn.textContent = 'View Intel';
+        intelBtn.textContent = 'View Ghost Intel';
         intelBtn.onclick = () => {
             const box = card.querySelector('.intel-box');
             const isOpen = box.style.display === 'block';
             box.style.display = isOpen ? 'none' : 'block';
-            intelBtn.textContent = isOpen ? 'View Intel' : 'Hide Intel';
+            intelBtn.textContent = isOpen ? 'View Ghost Intel' : 'Hide Ghost Intel';
         };
         card.appendChild(intelBtn);
 
@@ -1079,6 +1137,7 @@ function createGhostCards() {
 }
 
 function filterGhosts() {
+    let remaining = 0;
     ghosts.forEach(ghost => {
         const card = document.getElementById('ghost-' + ghost.name.replace(/\s+/g, ''));
         let isExcluded = false;
@@ -1097,10 +1156,18 @@ function filterGhosts() {
 
         if (isExcluded) {
             card.classList.add('excluded');
+            card.querySelector('.ghost-status').textContent = 'Ruled out';
         } else {
+            remaining++;
             card.classList.remove('excluded');
+            card.querySelector('.ghost-status').textContent = 'Possible';
         }
     });
+    document.getElementById('matchCount').textContent = `${remaining} of ${ghosts.length} possible`;
+    const meter = document.getElementById('matchProgress');
+    meter.setAttribute('aria-valuemax', String(ghosts.length));
+    meter.setAttribute('aria-valuenow', String(remaining));
+    document.getElementById('matchProgressFill').style.width = `${100 * remaining / ghosts.length}%`;
 }
 
 resetBtn.addEventListener('click', () => {
@@ -1111,6 +1178,7 @@ resetBtn.addEventListener('click', () => {
 
 createEvidenceButtons();
 createGhostCards();
+filterGhosts();
 </script>
 
 <footer class="tracker-sources" style="max-width:1600px;width:100%;margin:28px auto 12px;color:#94a3b8;font-size:0.78rem;line-height:1.7;text-align:center;">
