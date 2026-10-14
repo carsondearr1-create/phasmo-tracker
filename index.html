@@ -504,6 +504,32 @@
 .intel-box {max-height:280px}
 @media(max-width:850px){.sidebar .evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.tracker-header{padding:22px 12px}.main-panel .ghost-grid{grid-template-columns:1fr}}
+
+/* Compact investigation timer station */
+.timer-station{margin:0 0 24px;border:1px solid #39314b;border-radius:12px;background:#191720;overflow:hidden}
+.timer-station summary{cursor:pointer;padding:13px 14px;font-weight:700;color:#c4b5fd;display:flex;justify-content:space-between;align-items:center;list-style:none}
+.timer-station summary::-webkit-details-marker{display:none}
+.timer-station summary::after{content:'▾';font-size:1.1rem;color:#a78bfa}
+.timer-station:not([open]) summary::after{content:'▸'}
+.timer-station-body{padding:0 12px 12px;display:grid;gap:9px}
+.timer-tile{background:#20202a;border:1px solid #383447;border-radius:9px;padding:11px}
+.timer-tile-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.timer-tile-label{font-size:.82rem;font-weight:700;color:#d8d1e8}
+.timer-clock{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px;color:#e9d5ff;margin:4px 0}
+.timer-clock.timer-ready{color:#93c5fd}
+.timer-actions{display:flex;gap:6px;flex-wrap:wrap}
+.timer-actions button,.timer-mode{background:#322b45;color:#e9d5ff;border:1px solid #5b4b7b;border-radius:6px;padding:7px 9px;font:inherit;font-size:.76rem;cursor:pointer}
+.timer-actions button:hover,.timer-mode:hover{background:#46375e}
+.timer-actions button:focus-visible,.timer-mode:focus-visible,.timer-station summary:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+.timer-actions .timer-clear{background:#252630;color:#bfc6d5;border-color:#4b4d5c}
+.timer-caption{color:#aab1c2;font-size:.72rem;line-height:1.5;margin:5px 0 0}
+.timer-markers{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.timer-marker{font-size:.7rem;padding:3px 6px;border-radius:5px;border:1px solid #4b4659;color:#b8b0c8}
+.timer-marker.passed{background:#253a49;color:#93c5fd;border-color:#60a5fa}
+.timer-mode{max-width:100%;margin:5px 0;color:#dbeafe;border-color:#425e87;background:#24334a}
+.timer-station-note{font-size:.7rem;color:#aab1c2;line-height:1.5;margin:0 2px}
+@media(max-width:600px){.timer-clock{font-size:1.35rem}}
+
 </style>
 </head>
 <body>
@@ -523,6 +549,28 @@
     <div class="reset-bar">
         <button class="reset-btn" id="resetBtn">Reset Tracker</button>
     </div>
+
+
+<!-- Optional timer station: independent from evidence and checklists -->
+<details class="timer-station" id="huntTimerStation" open>
+  <summary>⏱ Hunt Timers <span style="font-size:.7rem;color:#9ca3af;font-weight:normal">2 tools</span></summary>
+  <div class="timer-station-body">
+    <div class="timer-tile">
+      <div class="timer-tile-top"><span class="timer-tile-label">👻 Hunt duration</span></div>
+      <div class="timer-clock" id="huntElapsed" role="timer">00:00</div>
+      <div class="timer-actions"><button type="button" id="huntStart">Start hunt</button><button type="button" id="huntStop">End hunt</button><button type="button" class="timer-clear" id="huntClear">Reset</button></div>
+      <p class="timer-caption" id="huntHint">Stopwatch: hunt lengths depend on map and difficulty.</p>
+    </div>
+    <div class="timer-tile">
+      <div class="timer-tile-top"><span class="timer-tile-label">🌿 Incense / Sage</span></div>
+      <div class="timer-clock" id="incenseElapsed" role="timer">00:00</div>
+      <div class="timer-markers"><span class="timer-marker" id="incense60">60s Demon</span><span class="timer-marker" id="incense90">90s Normal</span><span class="timer-marker" id="incense180">180s Spirit</span></div>
+      <div class="timer-actions"><button type="button" id="incenseStart">Used incense</button><button type="button" class="timer-clear" id="incenseClear">Reset</button></div>
+      <p class="timer-caption">Start when incense affects the ghost. Milestones show earliest possible normal hunts, not guaranteed hunts.</p>
+    </div>
+    <p class="timer-station-note">Timers are manual estimates. Cursed hunts can bypass normal prevention. Reset timers between contracts.</p>
+  </div>
+</details>
 
 <!-- Investigation Tools -->
 <div class="section-title">Investigation Tools</div>
@@ -1179,6 +1227,28 @@ resetBtn.addEventListener('click', () => {
 createEvidenceButtons();
 createGhostCards();
 filterGhosts();
+
+/* Independent hunt timing tools. Date.now() avoids drift when tab is backgrounded. */
+(() => {
+ const $ = id => document.getElementById(id);
+ const fmt = ms => { const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
+ let huntStart=null,huntLast=0,incenseStart=null;
+ function render(){
+  const now=Date.now();
+  $('huntElapsed').textContent=fmt(huntStart===null?huntLast:now-huntStart);
+  $('huntHint').textContent=huntStart!==null?'Hunt running — press End hunt when it finishes.':huntLast?'Hunt ended.':'Stopwatch: hunt lengths depend on map and difficulty.';
+  const incenseMs=incenseStart===null?0:now-incenseStart;
+  $('incenseElapsed').textContent=fmt(incenseMs);
+  [60,90,180].forEach(t=>$('incense'+t).classList.toggle('passed',incenseStart!==null&&incenseMs>=t*1000));
+ }
+ $('huntStart').addEventListener('click',()=>{huntStart=Date.now();huntLast=0;render();});
+ $('huntStop').addEventListener('click',()=>{if(huntStart===null)return;huntLast=Date.now()-huntStart;huntStart=null;render();});
+ $('huntClear').addEventListener('click',()=>{huntStart=null;huntLast=0;render();});
+ $('incenseStart').addEventListener('click',()=>{incenseStart=Date.now();render();});
+ $('incenseClear').addEventListener('click',()=>{incenseStart=null;render();});
+ setInterval(render,200);render();
+})();
+
 </script>
 
 <footer class="tracker-sources" style="max-width:1600px;width:100%;margin:28px auto 12px;color:#94a3b8;font-size:0.78rem;line-height:1.7;text-align:center;">
