@@ -390,6 +390,139 @@
         padding: 12px;
     }
 }
+/* ===================================
+   PHASMOPHOBIA LEFT SIDEBAR
+   =================================== */
+
+/* Expand the tracker to fit two columns */
+.container {
+    max-width: 1600px;
+    width: 100%;
+}
+
+/* Main two-column layout */
+.tracker-layout {
+    display: grid;
+    grid-template-columns: 310px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+/* Left sidebar appearance */
+.sidebar {
+    min-width: 0;
+    background: #15151b;
+    border: 1px solid #303645;
+    border-radius: 8px;
+    padding: 16px;
+    position: sticky;
+    top: 16px;
+}
+
+/* Stack investigation tabs vertically */
+.sidebar .tool-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+/* Keep checklist items in one column */
+.sidebar .checklist {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+/* Make investigation panels fit */
+.sidebar .tool-panel {
+    padding: 12px;
+    min-width: 0;
+}
+
+/* Adjust investigation heading */
+.sidebar .tool-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+/* Compact checklist cards */
+.sidebar .checklist-item {
+    padding: 10px;
+}
+
+/* Evidence buttons in one column */
+.sidebar .evidence-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+/* Full-width reset button */
+.sidebar .reset-btn {
+    width: 100%;
+}
+
+/* Right side containing ghost cards */
+.main-panel {
+    min-width: 0;
+}
+
+/* Responsive ghost card grid */
+.main-panel .ghost-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+/* ===================================
+   MOBILE AND TABLET SUPPORT
+   =================================== */
+
+@media (max-width: 850px) {
+
+    /* Stack sidebar above ghosts */
+    .tracker-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* Disable sticky positioning */
+    .sidebar {
+        position: static;
+    }
+
+    /* Put tabs side by side */
+    .sidebar .tool-tabs {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    /* Evidence buttons in two columns */
+    .sidebar .evidence-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    /* Allow checklist cards to expand */
+    .sidebar .checklist {
+        grid-template-columns:
+            repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+/* Small phone screens */
+@media (max-width: 480px) {
+
+    .sidebar {
+        padding: 12px;
+    }
+
+    .main-panel .ghost-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
     </style>
 </head>
 <body>
