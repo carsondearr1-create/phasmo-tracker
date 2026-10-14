@@ -495,6 +495,221 @@ const eventItems = [
     }
 ];
 
+const updatedIntel = {
+    "Aswang": [
+        "Hunt threshold: 50% average sanity.",
+        "A hunt can end immediately if it enters an official hiding spot occupied by a player.",
+        "After that special hunt-ending behavior, it can move toward the player who occupied the hiding spot."
+    ],
+
+    "Banshee": [
+        "Targets a specific player and bases its hunt threshold on that target's sanity.",
+        "Can produce a distinctive scream through the Parabolic Microphone or Sound Recorder.",
+        "Use the target's behavior and the unique scream together; ordinary singing events alone do not confirm a Banshee."
+    ],
+
+    "Dayan": [
+        "Hunt threshold depends on player movement and distance.",
+        "Within 10 meters, it can move at 2.25 m/s when the nearest player is walking and 1.2 m/s when that player is stationary.",
+        "When players are farther than 10 meters, its base speed is 1.7 m/s and normal line-of-sight acceleration can apply."
+    ],
+
+    "Demon": [
+        "Normally hunts at 70% average sanity, but its ability can trigger a hunt at any sanity.",
+        "Can hunt 60 seconds after being smudged instead of the usual 90 seconds.",
+        "Its normal hunt cooldown is 20 seconds instead of 25 seconds after a hunt or Crucifix prevention.",
+        "Its Crucifix has a 50% larger effective range at each tier."
+    ],
+
+    "Deogen": [
+        "Hunt threshold: 40% average sanity.",
+        "Moves at 3.0 m/s when far away and slows to 0.4 m/s near its target.",
+        "Always knows player locations during hunts, so hiding is ineffective; loop it around obstacles.",
+        "Has a 33% chance per Spirit Box question to produce unique heavy breathing when within 1 meter.",
+        "Spirit Box is guaranteed as an evidence type on difficulties that provide at least one evidence. A response is not guaranteed on every question."
+    ],
+
+    "Deildegast": [
+        "Hunt threshold: 50% average sanity.",
+        "Starts at 3.0 m/s and loses 0.1 m/s for each unique non-equipment item moved or interacted with since the previous hunt attempt.",
+        "Can slow to 0.4 m/s after enough items have been moved; speed cannot change during a hunt.",
+        "Its speed resets to 3.0 m/s after each hunt attempt and it does not accelerate with line of sight."
+    ],
+
+    "Gallu": [
+        "Cycles through Normal, Enraged, and Weakened states that change its behavior and speed.",
+        "Hunt thresholds vary by state: 50% Normal, 60% Enraged, and 40% Weakened.",
+        "Its speed is approximately 1.7 m/s in Normal, 1.96 m/s in Enraged, and 1.36 m/s in Weakened.",
+        "When Enraged, it can hunt directly on a Tier 1 Crucifix placed on the floor.",
+        "It is the only ghost that can take more than four steps immediately after stepping in salt."
+    ],
+
+    "Goryo": [
+        "Cannot change its favorite room.",
+        "D.O.T.S. evidence can only be seen through a video camera; it cannot be seen directly by a nearby player.",
+        "D.O.T.S. is guaranteed as an evidence type on limited-evidence difficulties, but you must still observe the evidence correctly."
+    ],
+
+    "Hantu": [
+        "Hunt speed depends on room temperature: colder rooms make it faster.",
+        "Does not gain normal line-of-sight speed acceleration.",
+        "Can produce visible freezing breath during hunts.",
+        "Cannot turn the breaker on, and it is especially dangerous if the building becomes cold."
+    ],
+
+    "Jinn": [
+        "Cannot directly turn the breaker off.",
+        "With the breaker on, its ability can drain 25% sanity from a nearby player and create EMF at the breaker.",
+        "Can accelerate to approximately 2.5 m/s when far from a player with an unobstructed route.",
+        "The speed boost does not apply when it is close to its target."
+    ],
+
+    "Kormos": [
+        "Reported behavior: has limited ability to detect players unless they are moving within close range.",
+        "The existing tracker describes it as not performing Ghost Mist or Chasing events.",
+        "Treat these as clues rather than proof; confirm them against the current cheat-sheet version before relying on them."
+    ],
+
+    "Mare": [
+        "Hunt threshold is 60% average sanity when the light switch in its current room is off, and 40% when the switch is on.",
+        "Cannot turn lights on, including TVs and computers, apart from motion-activated lights.",
+        "Can sometimes immediately turn off a light or switch that a player just turned on within 4 meters.",
+        "It is the only ghost that cannot cause an EMF Level 2 light-switch flicker."
+    ],
+
+    "Moroi": [
+        "A curse is applied when a player hears a Spirit Box response, a paranormal sound through the Parabolic Microphone, or a recordable sound captured by the Sound Recorder.",
+        "The curse doubles passive sanity drain, including in lit rooms.",
+        "Hunt speed increases as average sanity falls and can reach 2.25 m/s before line-of-sight acceleration.",
+        "Incense blinds it for 7 seconds during a hunt instead of the usual 5 seconds.",
+        "Spirit Box is guaranteed as an evidence type on difficulties that provide at least one evidence."
+    ],
+
+    "Myling": [
+        "Produces paranormal sounds more frequently through the Parabolic Microphone and Sound Recorder.",
+        "During a hunt, its footsteps and vocal sounds are unusually quiet at a distance.",
+        "Use the range of your flashlight and electronic equipment to compare when you hear footsteps versus when electronics begin to interfere."
+    ],
+
+    "Obambo": [
+        "Alternates between Calm and Aggressive states.",
+        "Its hunt speed can alternate between approximately 1.45 m/s and 1.96 m/s.",
+        "Compare multiple hunts; a single fast or slow hunt is not enough to confirm it.",
+        "The Twins can also show variable hunt speeds, so use additional evidence and behavior."
+    ],
+
+    "Obake": [
+        "Can leave a distinctive six-fingered handprint.",
+        "Can briefly change ghost model during hunt blinks.",
+        "Has a chance to leave no UV evidence on a surface it touches, so one missing fingerprint does not rule it out.",
+        "Inspect UV evidence promptly and look for unusual fingerprints or a model change."
+    ],
+
+    "Oni": [
+        "Drains 20% sanity during a ghost event instead of the usual 10%.",
+        "Never performs the Ghost Mist event.",
+        "Is more visible during hunts because it blinks less frequently.",
+        "Tends to be more active around multiple players."
+    ],
+
+    "Onryo": [
+        "Can attempt a hunt at any sanity after extinguishing three or more firelights since its last ability-hunt attempt.",
+        "A lit firelight can prevent a hunt attempt while it is within range, so observe candles and Crucifix interactions.",
+        "Can extinguish the same firelight twice within 20 seconds.",
+        "Three extinguishes indicate a possible hunt attempt, not a guarantee that a hunt will start immediately."
+    ],
+
+    "Phantom": [
+        "Taking a ghost photo causes it to disappear temporarily.",
+        "During hunts, it is invisible for longer periods between blinks than most ghosts.",
+        "Can roam toward a player, so compare its location before and after unexplained movement.",
+        "A photo that shows no ghost despite a valid ghost photo is a useful clue."
+    ],
+
+    "Poltergeist": [
+        "Can throw multiple objects at once with its special ability.",
+        "Throws objects with unusual force and frequency.",
+        "A pile of movable objects can help you test its ability.",
+        "The Mimic can imitate Poltergeist behavior, so check for its bonus Ghost Orbs."
+    ],
+
+    "Raiju": [
+        "Disrupts active electronic equipment from farther away than most ghosts.",
+        "Can hunt at 65% average sanity when near active electronic equipment.",
+        "Can reach approximately 2.5 m/s near active electronics.",
+        "Does not use normal line-of-sight speed acceleration."
+    ],
+
+    "Revenant": [
+        "Moves very slowly when it has not detected a player's location.",
+        "When it detects a player, it accelerates dramatically to approximately 3.0 m/s.",
+        "Break line of sight and avoid revealing your location; its speed change is its main identifying clue.",
+        "A sudden acceleration toward a known location is more useful than speed alone."
+    ],
+
+    "Shade": [
+        "Normally hunts only at 35% average sanity.",
+        "Cannot initiate a hunt or perform ghost interactions while a player is in the same room.",
+        "Try observing from an adjacent room if activity is unusually low.",
+        "Low activity alone is not proof of a Shade."
+    ],
+
+    "Spirit": [
+        "After being successfully smudged, it cannot attempt another hunt for 180 seconds.",
+        "Most ghosts have a 90-second smudge prevention period.",
+        "Time the interval after incense and account for hunt cooldowns before drawing a conclusion."
+    ],
+
+    "Thaye": [
+        "Ages over time when players spend time in the same room with it.",
+        "A young Thaye can hunt at 75% average sanity and move at up to 2.75 m/s.",
+        "As it ages, its hunt threshold can drop to 15% and its speed to 1.0 m/s.",
+        "Its age can be checked with an Ouija Board; it is the only ghost that can return an age of 90 or higher.",
+        "Does not accelerate through normal line-of-sight speed buildup."
+    ],
+
+    "The Mimic": [
+        "Always produces Ghost Orbs as bonus evidence, even on zero-evidence settings.",
+        "Copies another ghost's behavior and abilities, changing its target every 30–120 seconds.",
+        "Its behavior and speed can change between hunts.",
+        "Check for Ghost Orbs alongside its three normal evidence types: Ultraviolet, Freezing Temps, and Spirit Box."
+    ],
+
+    "The Twins": [
+        "Can perform interactions in two different locations, including at nearly the same time.",
+        "Hunt speed can be approximately 1.5 m/s or 1.9 m/s depending on which interaction starts the hunt.",
+        "Compare speeds across multiple hunts and watch for distant interactions.",
+        "Obambo can also show variable speeds, so do not rely on speed variation alone."
+    ],
+
+    "Wraith": [
+        "Never touches or interacts with salt.",
+        "Cannot be slowed by Tier 3 salt during a hunt.",
+        "Can teleport to a random player, leaving EMF Level 2 or Level 5 at the destination.",
+        "After teleporting, it walks back toward its favorite room."
+    ],
+
+    "Yokai": [
+        "Voice and electronic detection range during hunts is only about 2.5 meters.",
+        "Talking in the same room can allow it to hunt at up to 80% average sanity.",
+        "Its Music Box event range is shorter than normal.",
+        "Try voice tests from a distance during a hunt, but stay safe and do not rely on sound tests alone."
+    ],
+
+    "Yurei": [
+        "Can fully open or close an exit door outside a hunt or ghost event.",
+        "Its door ability can drain 15% sanity from nearby players.",
+        "Incense in its room traps it there for the duration of the effect, normally 90 seconds.",
+        "Use door behavior and room movement together to distinguish it from other ghosts."
+    ]
+};
+
+ghosts.forEach(ghost => {
+    if (updatedIntel[ghost.name]) {
+        ghost.intel = updatedIntel[ghost.name];
+    }
+});
+
 const evidenceState = {};
 evidences.forEach(e => evidenceState[e] = "neutral");
 
