@@ -4,6 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phasmophobia Ghost Tracker & Intel Sheet</title>
+    
+/* Left-hand sidebar layout */
+.container {
+    max-width: 1600px;
+    width: 100%;
+}
+
+.tracker-layout {
+    display: grid;
+    grid-template-columns: 310px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.sidebar {
+    min-width: 0;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    position: sticky;
+    top: 16px;
+}
+
+.sidebar .tool-tabs,
+.sidebar .checklist,
+.sidebar .evidence-grid {
+    grid-template-columns: 1fr;
+}
+
+.sidebar .tool-heading {
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.sidebar .tool-panel {
+    padding: 12px;
+}
+
+.sidebar .checklist-item {
+    padding: 9px;
+}
+
+.sidebar .reset-btn {
+    width: 100%;
+}
+
+.main-panel {
+    min-width: 0;
+}
+
+.main-panel .ghost-grid {
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(220px, 1fr)
+    );
+}
+
+/* Mobile-friendly layout */
+@media (max-width: 850px) {
+    .tracker-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+    }
+
+    .sidebar .tool-tabs,
+    .sidebar .evidence-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
     <style>
         :root {
             --bg-color: #0c0c0e;
@@ -327,6 +400,8 @@
         <strong>How to use:</strong> Tap evidence buttons once to mark them found (Green), twice to cross them out (Red), or a third time to clear them. Impossible ghosts will fade away automatically to help you quickly identify the entity.
     </div>
 
+<div class="tracker-layout">
+    <aside class="sidebar">
 <!-- Investigation Tools -->
 <div class="section-title">Investigation Tools</div>
 
@@ -375,8 +450,13 @@
     <div class="reset-bar">
         <button class="reset-btn" id="resetBtn">Reset Tracker</button>
     </div>
-    <div class="section-title">Matching Ghosts</div>
-    <div class="ghost-grid" id="ghostGrid"></div>
+    </aside>
+
+    <main class="main-panel">
+        <div class="section-title">Matching Ghosts</div>
+        <div class="ghost-grid" id="ghostGrid"></div>
+    </main>
+</div>
 </div>
 <script>
     const evidences = ["EMF Level 5", "Ultraviolet", "Freezing Temps", "Ghost Orb", "Ghost Writing", "Spirit Box", "D.O.T.S. Projector"];
