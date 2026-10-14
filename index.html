@@ -170,6 +170,153 @@
             transform: scale(0.96);
             pointer-events: none;
         }
+        
+/* Investigation checklist and event toggle */
+.tool-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0 16px;
+}
+
+.tool-tab {
+    background: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 12px 10px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.tool-tab.active {
+    border-color: var(--accent-found);
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+}
+
+.tool-tab:focus-visible,
+.checklist input:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 3px;
+}
+
+.tool-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 28px;
+}
+
+.tool-panel[hidden] {
+    display: none !important;
+}
+
+.tool-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.tool-heading h2 {
+    font-size: 1rem;
+    margin: 0 0 6px;
+    color: #fff;
+}
+
+.tool-heading p {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-dim);
+    margin: 0;
+}
+
+.checklist {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.checklist-item input {
+    margin-top: 3px;
+    accent-color: var(--accent-found);
+    flex-shrink: 0;
+}
+
+.checklist-item:has(input:checked) {
+    border-color: var(--accent-found);
+    background: rgba(34, 197, 94, 0.07);
+}
+
+.checklist-copy {
+    min-width: 0;
+}
+
+.checklist-title {
+    display: block;
+    color: var(--text-color);
+    font-size: 0.85rem;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+.checklist-note {
+    display: block;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin-top: 5px;
+}
+
+.checklist-clue {
+    display: block;
+    color: #93c5fd;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    margin-top: 7px;
+}
+
+.checklist-legend {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.checklist-progress {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin: 0 0 12px;
+}
+
+@media (max-width: 520px) {
+    .tool-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .tool-heading {
+        align-items: flex-start;
+    }
+
+    .tool-panel {
+        padding: 12px;
+    }
+}
     </style>
 </head>
 <body>
@@ -179,6 +326,49 @@
     <div style="color: #cbd5e1; font-size: 0.95rem; margin-top: -15px; margin-bottom: 25px; max-width: 600px; line-height: 1.5;">
         <strong>How to use:</strong> Tap evidence buttons once to mark them found (Green), twice to cross them out (Red), or a third time to clear them. Impossible ghosts will fade away automatically to help you quickly identify the entity.
     </div>
+
+<!-- Investigation Tools -->
+<div class="section-title">Investigation Tools</div>
+
+<div class="tool-tabs" role="group" aria-label="Investigation tools">
+    <button type="button" class="tool-tab active"
+            data-panel="investigationPanel" aria-pressed="true">
+        Investigation Checklist
+    </button>
+    <button type="button" class="tool-tab"
+            data-panel="eventsPanel" aria-pressed="false">
+        Events &amp; Behavior
+    </button>
+</div>
+
+<section id="investigationPanel" class="tool-panel">
+    <div class="tool-heading">
+        <div>
+            <h2>Investigation Checklist</h2>
+            <p>Track your tests without changing your evidence journal.</p>
+        </div>
+        <button type="button" class="reset-btn" id="resetInvestigation">
+            Reset
+        </button>
+    </div>
+    <div id="investigationChecklist" class="checklist"></div>
+</section>
+
+<section id="eventsPanel" class="tool-panel" hidden>
+    <div class="tool-heading">
+        <div>
+            <h2>Events &amp; Behavior</h2>
+            <p>Mark observations and review the ghosts they may indicate.</p>
+        </div>
+        <button type="button" class="reset-btn" id="resetEvents">
+            Reset
+        </button>
+    </div>
+    <div class="checklist-legend">
+        These are behavioral clues, not automatic evidence confirmations.
+    </div>
+    <div id="eventsChecklist" class="checklist"></div>
+</section>
 
     <div class="section-title">Evidence Panel</div>
     <div class="evidence-grid" id="evidenceGrid"></div>
@@ -194,7 +384,7 @@
         { name: "Aswang", evidence: ["Freezing Temps", "Ghost Writing", "D.O.T.S. Projector"], intel: ["Hunts at 50% sanity.", "Will immediately end hunt if they enter an official hiding spot.", "Walks towards the player that was in that spot immediately after."] },
         { name: "Banshee", evidence: ["Ultraviolet", "Ghost Orb", "D.O.T.S. Projector"], intel: ["Always Female.", "Hunts at 50% target sanity. Selects a random target first hunt, lobby host second hunt, then down room arrival order.", "Prefers 'singing events'. Can wail/sing on Parabolic Mic/Sound Recorder (20 variants).", "Will only roam at their target on DOTS."] },
         { name: "Dayan", evidence: ["Spirit Box", "Ghost Orb", "EMF Level 5"], intel: ["Always Female.", "Hunt duration and speed are determined entirely by player speed and closeness.", "Can hunt at 65% sanity, drops to 44% when a player is in closer range."] },
-        { name: "Demon", evidence: ["Ultraviolet", "Freezing Temps", "Ghost Writing"], intel: ["Hunts starting at 70% sanity. Can trigger instantly upon entry.", "May completely ignore the typical hunt cooldown or incense safety timers."] },
+        { name: "Demon", evidence: ["Ultraviolet", "Freezing Temps", "Ghost Writing"], intel: ["Hunts at 40% sanity.","Always knows player locations during a hunt; it slows dramatically when close to its target.","Has a 33% chance per Spirit Box question to give a unique heavy-breathing response within 1 meter.","On difficulties with 1 or 2 evidence types, Spirit Box is guaranteed to be one of its evidence types."]
         { name: "Deogen", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S. Projector"], intel: ["Hunts at 40% sanity.", "Insanely fast; impossible to hide from. Must use utility items or loop to break line of sight.", "Guaranteed Spirit Box response even on 0-evidence difficulty."] },
         { name: "Deildegast", evidence: ["EMF Level 5", "Ghost Writing", "D.O.T.S. Projector"], intel: ["Hunt speed determined by number of non equiipment items thrown. Starts at 3.0m/s then goes down by 0.5m/s for each item thrown."] },
         { name: "Gallu", evidence: ["EMF Level 5", "Ultraviolet", "Spirit Box"], intel: ["Hunts at 50% sanity.", "Has 3 behavior phases: Normal, Enraged, and Weakened.", "Can hunt directly on top of a Tier 1 Crucifix placed on the ground.", "Does not speed up in LOS."] },
@@ -223,12 +413,226 @@
 { name: "Yurei", evidence: ["Freezing Temps", "Ghost Orb", "D.O.T.S. Projector"], intel: ["The only entity that can fully slam or manipulate facility exit doors outside of events/hunts.", "Interactions fully open or snap doors shut. Snapping doors closed heavily drops nearby player sanity."] }
 ];
 
+const investigationItems = [
+    {
+        title: "Locate the ghost room",
+        note: "Use temperature changes, interactions, sounds, and equipment."
+    },
+    {
+        title: "Test Spirit Box",
+        note: "Be near the ghost, turn room lights off, and check the response conditions."
+    },
+    {
+        title: "Check for Ghost Orbs",
+        note: "Review the video feed carefully. Remember The Mimic can show extra orbs."
+    },
+    {
+        title: "Check for Ghost Writing",
+        note: "Place the book in a useful location and allow time for an interaction."
+    },
+    {
+        title: "Test D.O.T.S.",
+        note: "Observe the projector and use a video camera when appropriate."
+    },
+    {
+        title: "Collect UV evidence",
+        note: "Inspect doors, windows, and other touched surfaces promptly."
+    },
+    {
+        title: "Check Freezing Temperatures",
+        note: "Use a thermometer and allow the room temperature to fall."
+    },
+    {
+        title: "Check EMF Level 5",
+        note: "Look for a level 5 reading following a suitable ghost interaction."
+    },
+    {
+        title: "Review remaining ghosts",
+        note: "Compare the evidence and behavioral clues before making a final guess."
+    }
+];
+
+const eventItems = [
+    {
+        title: "Spirit Box response received",
+        note: "A successful response can curse the player who asked the question if the ghost is a Moroi. The curse does not change how the response sounds.",
+        clue: "Possible ghost: Moroi"
+    },
+    {
+        title: "Heavy breathing on Spirit Box",
+        note: "The Deogen has a 33% chance per question to give its unique heavy-breathing response when the player is within 1 meter.",
+        clue: "Strong clue: Deogen"
+    },
+    {
+        title: "Playing with 1 or 2 evidence types",
+        note: "On these limited-evidence settings, the Deogen always has Spirit Box among its evidence types. This does not apply to zero-evidence runs.",
+        clue: "Mechanic to remember: Deogen"
+    },
+    {
+        title: "Extra Ghost Orbs observed",
+        note: "The Mimic produces Ghost Orbs as a bonus trait in addition to its three normal evidence types.",
+        clue: "Check for The Mimic"
+    },
+    {
+        title: "Unusual six-finger UV handprint",
+        note: "The Obake can leave a distinctive six-fingered handprint. It can also sometimes fail to leave UV evidence.",
+        clue: "Strong clue: Obake"
+    },
+    {
+        title: "D.O.T.S. seen only through a camera",
+        note: "Goryo's D.O.T.S. evidence is seen through a video camera and cannot be seen directly by a nearby player.",
+        clue: "Possible ghost: Goryo"
+    },
+    {
+        title: "Ghost avoids placed salt",
+        note: "A Wraith will not step in or disturb a pile of salt. A lack of salt disturbance alone is not conclusive.",
+        clue: "Possible ghost: Wraith"
+    },
+    {
+        title: "Three firelight extinguishes",
+        note: "After extinguishing three firelight flames, an Onryo can attempt to initiate a hunt. Use this clue carefully and watch for other explanations.",
+        clue: "Test for: Onryo"
+    }
+];
+
 const evidenceState = {};
 evidences.forEach(e => evidenceState[e] = "neutral");
 
 const evidenceGrid = document.getElementById('evidenceGrid');
 const ghostGrid = document.getElementById('ghostGrid');
 const resetBtn = document.getElementById('resetBtn');
+
+/* Investigation tools: separate state from the evidence journal */
+const investigationChecks = {};
+const eventChecks = {};
+
+const investigationContainer =
+    document.getElementById("investigationChecklist");
+const eventsContainer =
+    document.getElementById("eventsChecklist");
+
+function renderChecklist(container, items, state, statePrefix) {
+    container.innerHTML = "";
+
+    const progress = document.createElement("p");
+    progress.className = "checklist-progress";
+    progress.setAttribute("aria-live", "polite");
+    container.appendChild(progress);
+
+    items.forEach((item, index) => {
+        const key = statePrefix + index;
+
+        if (state[key] === undefined) {
+            state[key] = false;
+        }
+
+        const label = document.createElement("label");
+        label.className = "checklist-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = state[key];
+
+        const copy = document.createElement("span");
+        copy.className = "checklist-copy";
+
+        const title = document.createElement("span");
+        title.className = "checklist-title";
+        title.textContent = item.title;
+
+        const note = document.createElement("span");
+        note.className = "checklist-note";
+        note.textContent = item.note;
+
+        copy.appendChild(title);
+        copy.appendChild(note);
+
+        if (item.clue) {
+            const clue = document.createElement("span");
+            clue.className = "checklist-clue";
+            clue.textContent = item.clue;
+            copy.appendChild(clue);
+        }
+
+        checkbox.addEventListener("change", () => {
+            state[key] = checkbox.checked;
+            updateProgress();
+        });
+
+        label.appendChild(checkbox);
+        label.appendChild(copy);
+        container.appendChild(label);
+    });
+
+    function updateProgress() {
+        const completed = items.filter(
+            (_, index) => state[statePrefix + index]
+        ).length;
+
+        progress.textContent =
+            `${completed} of ${items.length} checked`;
+    }
+
+    updateProgress();
+}
+
+/* Switch between the two panels */
+document.querySelectorAll(".tool-tab").forEach(button => {
+    button.addEventListener("click", () => {
+        const targetId = button.dataset.panel;
+
+        document.querySelectorAll(".tool-tab").forEach(tab => {
+            const active = tab === button;
+            tab.classList.toggle("active", active);
+            tab.setAttribute("aria-pressed", String(active));
+        });
+
+        document.querySelectorAll(".tool-panel").forEach(panel => {
+            panel.hidden = panel.id !== targetId;
+        });
+    });
+});
+
+/* Reset each checklist independently */
+document.getElementById("resetInvestigation")
+    .addEventListener("click", () => {
+        Object.keys(investigationChecks).forEach(
+            key => delete investigationChecks[key]
+        );
+        renderChecklist(
+            investigationContainer,
+            investigationItems,
+            investigationChecks,
+            "investigation-"
+        );
+    });
+
+document.getElementById("resetEvents")
+    .addEventListener("click", () => {
+        Object.keys(eventChecks).forEach(
+            key => delete eventChecks[key]
+        );
+        renderChecklist(
+            eventsContainer,
+            eventItems,
+            eventChecks,
+            "event-"
+        );
+    });
+
+renderChecklist(
+    investigationContainer,
+    investigationItems,
+    investigationChecks,
+    "investigation-"
+);
+
+renderChecklist(
+    eventsContainer,
+    eventItems,
+    eventChecks,
+    "event-"
+);
 
 function createEvidenceButtons() {
     evidenceGrid.innerHTML = '';
