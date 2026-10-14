@@ -451,7 +451,21 @@
     }
 }
 
-    </style>
+    
+        /* Ghost hunt speed, displayed immediately beneath each name */
+        .ghost-speed {
+            margin: 0 0 12px;
+            padding: 8px 10px;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 5px;
+            background: rgba(34, 197, 94, 0.07);
+            font-size: 0.78rem;
+            line-height: 1.45;
+            color: #cbd5e1;
+        }
+        .ghost-speed strong { display: block; color: #4ade80; margin-bottom: 3px; }
+
+</style>
 </head>
 <body>
 <div class="container">
@@ -463,13 +477,12 @@
 
 <div class="tracker-layout">
     <aside class="sidebar">
-        
-         <div class="section-title">Evidence Panel</div>
+    <div class="section-title">Evidence Panel</div>
     <div class="evidence-grid" id="evidenceGrid"></div>
     <div class="reset-bar">
         <button class="reset-btn" id="resetBtn">Reset Tracker</button>
     </div>
-        
+
 <!-- Investigation Tools -->
 <div class="section-title">Investigation Tools</div>
 
@@ -513,7 +526,6 @@
     <div id="eventsChecklist" class="checklist"></div>
 </section>
 
-   
     </aside>
 
     <main class="main-panel">
@@ -637,6 +649,38 @@ const eventItems = [
         clue: "Test for: Onryo"
     }
 ];
+
+const ghostHuntSpeeds = {
+    "Aswang": "Special hunt-ending behavior; movement speed not verified.",
+    "Banshee": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Demon": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Deogen": "3.0 m/s at long range; slows to about 0.4 m/s close to a player.",
+    "Deildegast": "3.0 m/s initially; slows by about 0.1 m/s per unique non-equipment item moved, down to 0.4 m/s.",
+    "Gallu": "About 1.7 m/s normal; 1.96 m/s enraged; 1.36 m/s weakened.",
+    "Goryo": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Hantu": "About 1.4–2.7 m/s depending on room temperature; faster in cold areas.",
+    "Jinn": "1.7 m/s base; can reach about 2.5 m/s with breaker on when far from its target.",
+    "Kormos": "Movement speed not verified; use its detection behavior as a clue.",
+    "Mare": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Moroi": "About 1.5–2.25 m/s depending on average sanity; can accelerate further with line of sight.",
+    "Myling": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Obambo": "About 1.45 m/s calm or 1.96 m/s aggressive.",
+    "Obake": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Oni": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Onryo": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Phantom": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Poltergeist": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Raiju": "1.7 m/s base; about 2.5 m/s near active electronics.",
+    "Revenant": "1.0 m/s without a detected player; 3.0 m/s after detecting one.",
+    "Shade": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Spirit": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Thaye": "About 2.75 m/s when young; slows with age to about 1.0 m/s.",
+    "The Mimic": "Varies: copies the movement speed and hunt behavior of another ghost.",
+    "The Twins": "About 1.5 m/s (slow twin) or 1.9 m/s (fast twin).",
+    "Wraith": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Yokai": "1.7 m/s base; accelerates with sustained line of sight.",
+    "Yurei": "1.7 m/s base; accelerates with sustained line of sight."
+};
 
 const updatedIntel = {
     "Aswang": [
@@ -1038,7 +1082,17 @@ function createGhostCards() {
             list.appendChild(item);
         });
 
+        const speed = document.createElement('div');
+        speed.className = 'ghost-speed';
+        const speedHeading = document.createElement('strong');
+        speedHeading.textContent = 'Hunt Speed';
+        const speedDetails = document.createElement('span');
+        speedDetails.textContent = ghostHuntSpeeds[ghost.name] || 'Speed information unavailable.';
+        speed.appendChild(speedHeading);
+        speed.appendChild(speedDetails);
+
         mainContent.appendChild(name);
+        mainContent.appendChild(speed);
         mainContent.appendChild(list);
         card.appendChild(mainContent);
 
