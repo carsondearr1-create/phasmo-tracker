@@ -544,6 +544,19 @@
 .ghost-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
 .ghost-card-actions .intel-btn{margin:0}
 @media(max-width:500px){.ghost-card-actions{grid-template-columns:1fr 1fr}.clear-crossouts{font-size:.72rem}}
+
+/* Compact, tablet-friendly observation groups */
+.event-categories { display: grid; gap: 10px; }
+.event-category { border: 1px solid #39445b; background: rgba(20,25,39,.58); border-radius: 10px; overflow: hidden; }
+.event-category-heading { cursor: pointer; list-style: none; padding: 12px 13px; color: #b7d5ff; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.event-category-heading::-webkit-details-marker { display: none; }
+.event-category-heading::before { content: '▸'; color: #93c5fd; }
+.event-category[open] > .event-category-heading::before { content: '▾'; }
+.event-category-heading > span:first-child { flex: 1; }
+.event-category-count { font-size: 12px; color: #a8b6cb; white-space: nowrap; }
+.event-category-list { padding: 0 9px 10px; }
+.event-category-list .checklist-item { margin-top: 7px; }
+
 </style>
 </head>
 <body>
@@ -617,7 +630,7 @@
     <div class="tool-heading">
         <div>
             <h2>Events &amp; Behavior</h2>
-            <p>Mark observations and review the ghosts they may indicate.</p>
+            <p>Open a category, check observations, and compare possible ghosts. No automatic eliminations.</p>
         </div>
         <button type="button" class="reset-btn" id="resetEvents">
             Reset
@@ -626,7 +639,7 @@
     <div class="checklist-legend">
         These are behavioral clues, not automatic evidence confirmations.
     </div>
-    <div id="eventsChecklist" class="checklist"></div>
+    <div id="eventsChecklist" class="event-categories"></div>
 </section>
 
     </aside>
@@ -712,49 +725,54 @@ const investigationItems = [
     }
 ];
 
-const eventItems = [
-    {
-        title: "Spirit Box response received",
-        note: "A successful response can curse the player who asked the question if the ghost is a Moroi. The curse does not change how the response sounds.",
-        clue: "Possible ghost: Moroi"
-    },
-    {
-        title: "Heavy breathing on Spirit Box",
-        note: "The Deogen has a 33% chance per question to give its unique heavy-breathing response when the player is within 1 meter.",
-        clue: "Strong clue: Deogen"
-    },
-    {
-        title: "Playing with 1 or 2 evidence types",
-        note: "On 1- or 2-evidence settings, Deogen has Spirit Box as forced evidence. This does not apply to zero-evidence runs.",
-        clue: "Mechanic to remember: Deogen"
-    },
-    {
-        title: "Extra Ghost Orbs observed",
-        note: "The Mimic produces Ghost Orbs as a bonus trait in addition to its three normal evidence types.",
-        clue: "Check for The Mimic"
-    },
-    {
-        title: "Unusual six-finger UV handprint",
-        note: "The Obake can leave a distinctive six-fingered handprint. It can also sometimes fail to leave UV evidence.",
-        clue: "Strong clue: Obake"
-    },
-    {
-        title: "D.O.T.S. seen only through a camera",
-        note: "Goryo's D.O.T.S. evidence is seen through a video camera and cannot be seen directly by a nearby player.",
-        clue: "Possible ghost: Goryo"
-    },
-    {
-        title: "Ghost avoids placed salt",
-        note: "A Wraith will not step in or disturb a pile of salt. A lack of salt disturbance alone is not conclusive.",
-        clue: "Possible ghost: Wraith"
-    },
-    {
-        title: "Three firelight extinguishes",
-        note: "After extinguishing three firelight flames, an Onryo can attempt to initiate a hunt. Use this clue carefully and watch for other explanations.",
-        clue: "Test for: Onryo"
-    }
+// Behavior observations are prompts for manual investigation, not automatic exclusions.
+const eventCategories = [
+  { name: "Ghost Events", icon: "👻", items: [
+    { title: "Ghost mist / airball event witnessed", note: "Oni and Kormos cannot perform this event. The Mimic can copy other ghost behaviors; don't automatically rule it out.", clue: "Rule-out clue: Oni / Kormos" },
+    { title: "Singing ghost event", note: "Banshees favor singing events, but many ghosts can sing. This is suggestive, not proof.", clue: "Consider: Banshee" },
+    { title: "Ghost disappears when photographed", note: "A successfully photographed Phantom disappears from view during the event; check that you actually captured the ghost.", clue: "Strong test: Phantom" },
+    { title: "Front exit door manipulated outside hunt/event", note: "A Yurei can interact with the front door outside a hunt or ghost event. Distinguish this from normal event behavior.", clue: "Strong clue: Yurei" },
+    { title: "Ghost repeatedly interacts with one player", note: "Banshee has a preferred target. Compare repeated events and roaming rather than treating one interaction as proof.", clue: "Consider: Banshee" }
+  ]},
+  { name: "Hunt Behavior", icon: "👣", items: [
+    { title: "Ghost is unusually hard to see while blinking", note: "Phantom is less visible during hunts; Oni is visible more often. Compare across multiple blinks.", clue: "Compare: Phantom / Oni" },
+    { title: "Ghost changes model briefly during a hunt", note: "Obake can briefly shapeshift while hunting. Watch its appearance carefully.", clue: "Strong clue: Obake" },
+    { title: "Ghost is quiet until very close", note: "Myling footsteps and vocal sounds may only become audible close by. Compare with electronics interference and safe distance.", clue: "Consider: Myling" },
+    { title: "Ghost becomes very fast after detecting a player", note: "Revenant is slow without a detected target and very fast after detecting one. Other ghosts also accelerate with line of sight.", clue: "Compare: Revenant" },
+    { title: "Ghost slows dramatically near a player", note: "Deogen is fast when distant and very slow when close. Never rely on a hiding spot as a test.", clue: "Strong clue: Deogen" },
+    { title: "Ghost speeds up near powered electronics", note: "Raiju can gain speed near active electronic equipment during hunts.", clue: "Consider: Raiju" },
+    { title: "Ghost speed varies with room temperature", note: "Hantu moves faster in cold areas and slower in warm ones; breaker state affects room temperature.", clue: "Consider: Hantu" },
+    { title: "Ghost speed changes with player movement", note: "Dayan has distinctive speed changes depending on movement of nearby players; observe only from a safe position.", clue: "Consider: Dayan" },
+    { title: "Ghost seems faster or slower over time", note: "Thaye ages and slows; Moroi accelerates as sanity falls; Obambo can change states. Compare repeated hunts.", clue: "Compare: Thaye / Moroi / Obambo" },
+    { title: "Hunt ends unusually near a hiding spot", note: "Aswang has a special hunt-ending interaction with occupied hiding spots. Do not deliberately expose yourself to test it.", clue: "Consider: Aswang" }
+  ]},
+  { name: "Equipment Tests", icon: "📻", items: [
+    { title: "Heavy breathing through Spirit Box", note: "Deogen has a distinctive close-range Spirit Box breathing response. Ordinary Spirit Box responses do not prove Deogen.", clue: "Strong clue: Deogen" },
+    { title: "Spirit Box response received", note: "A Moroi can curse a player through a Spirit Box response. The response itself sounds normal.", clue: "Possible: Moroi" },
+    { title: "Parabolic microphone scream / wail", note: "Banshee has a distinctive parabolic microphone sound. Verify the sound rather than assuming any scream is unique.", clue: "Strong clue: Banshee" },
+    { title: "Ghost does not disturb salt", note: "Wraith does not step in salt. No disturbance by itself isn't enough; Gallu may also avoid salt in a particular state.", clue: "Consider: Wraith / Gallu" },
+    { title: "Six-finger handprint or unusual UV print", note: "Obake can leave special UV prints, but they are not guaranteed on every interaction.", clue: "Strong clue: Obake" },
+    { title: "D.O.T.S. only visible on video", note: "Goryo D.O.T.S. has special camera-viewing conditions. Test from outside the room when possible.", clue: "Consider: Goryo" },
+    { title: "Extra Ghost Orbs alongside other evidence", note: "The Mimic can show bonus Ghost Orbs. Don't treat those orbs as one of its normal evidence types.", clue: "Check: The Mimic" },
+    { title: "Spirit Box forced on limited-evidence difficulty", note: "Deogen has forced Spirit Box evidence on one- and two-evidence settings, not zero-evidence settings.", clue: "Mechanic: Deogen" }
+  ]},
+  { name: "Environment & Activity", icon: "💡", items: [
+    { title: "Multiple items thrown in a burst", note: "Poltergeist can throw many nearby objects together. One thrown item is not unique.", clue: "Consider: Poltergeist" },
+    { title: "Object-throwing pattern changes hunt speed", note: "Deildegast speed can decrease as it moves eligible objects. Compare repeated hunts and item interactions.", clue: "Consider: Deildegast" },
+    { title: "Ghost immediately turns a light off", note: "Mare has special light-switch behavior. Other ghosts can turn lights off, so repetition and context matter.", clue: "Consider: Mare" },
+    { title: "Breaker interactions or speed depend on breaker", note: "Compare Jinn's breaker-dependent hunt behavior and Hantu's cold-room speed changes.", clue: "Compare: Jinn / Hantu" },
+    { title: "Ghost remains in its room", note: "Goryo generally does not change favorite rooms. Difficulty and other circumstances affect what you can observe.", clue: "Consider: Goryo" },
+    { title: "Ghost becomes less active with time", note: "Thaye ages near players, which changes some behaviors. Activity alone is not decisive.", clue: "Consider: Thaye" }
+  ]},
+  { name: "Sanity & Special Tests", icon: "🧠", items: [
+    { title: "Hunt begins at unusually high sanity", note: "Compare Demon, Thaye, Raiju, Yokai, Mare, and other conditional thresholds. Cursed hunts can bypass normal thresholds.", clue: "Check early-hunt conditions" },
+    { title: "Hunt begins at unusually low sanity", note: "Shade has a low normal hunt threshold. A single late hunt does not prove it is a Shade.", clue: "Consider: Shade" },
+    { title: "Incense delays a hunt much longer", note: "Spirit can be prevented from hunting for 180 seconds after incense affects it, versus 90 seconds for most ghosts and 60 for Demon. Other hunt restrictions may also apply.", clue: "Compare: Spirit / Demon" },
+    { title: "Three firelight extinguishes", note: "Onryo can attempt a hunt after extinguishing flames. Be mindful of ordinary hunt restrictions and the position of flames.", clue: "Consider: Onryo" },
+    { title: "Crucifix behaves unusually", note: "Compare Demon crucifix range, Onryo flame behavior, and Gallu special states; check the current game version before drawing conclusions.", clue: "Compare: Demon / Onryo / Gallu" },
+    { title: "Ghost won't interact or hunt in a player's room", note: "Shade has restrictions on some interactions and hunts when a player shares its room. Confirm the actual ghost location.", clue: "Consider: Shade" }
+  ]}
 ];
-
 // Reviewed against July–October 2026 ghost guides. Normal speeds assume 100% ghost-speed difficulty.
 const ghostHuntSpeeds = {
     "Aswang": "1.53 m/s base; unusually fast line-of-sight acceleration (up to ~2.53 m/s).",
@@ -1045,6 +1063,76 @@ function renderChecklist(container, items, state, statePrefix) {
     updateProgress();
 }
 
+function renderEventCategories() {
+    eventsContainer.innerHTML = '';
+    const total = eventCategories.reduce((sum, category) => sum + category.items.length, 0);
+    const status = document.createElement('p');
+    status.className = 'checklist-progress';
+    status.setAttribute('aria-live', 'polite');
+    eventsContainer.appendChild(status);
+    const summaryTrack = document.createElement('div');
+    summaryTrack.className = 'checklist-progress-track';
+    const summaryFill = document.createElement('span');
+    summaryTrack.appendChild(summaryFill);
+    eventsContainer.appendChild(summaryTrack);
+    function refreshProgress() {
+        const completed = Object.values(eventChecks).filter(Boolean).length;
+        status.textContent = `${completed} of ${total} observations checked`;
+        summaryFill.style.width = `${Math.round(completed * 100 / total)}%`;
+    }
+    eventCategories.forEach((category, categoryIndex) => {
+        const section = document.createElement('details');
+        section.className = 'event-category';
+        section.open = categoryIndex === 0;
+        const heading = document.createElement('summary');
+        heading.className = 'event-category-heading';
+        const title = document.createElement('span');
+        title.textContent = `${category.icon}  ${category.name}`;
+        const count = document.createElement('span');
+        count.className = 'event-category-count';
+        heading.append(title, count);
+        section.appendChild(heading);
+        const list = document.createElement('div');
+        list.className = 'checklist event-category-list';
+        function refreshCategoryCount() {
+            const completed = category.items.filter((_, i) => eventChecks[`event-${categoryIndex}-${i}`]).length;
+            count.textContent = `${completed}/${category.items.length}`;
+        }
+        category.items.forEach((item, index) => {
+            const key = `event-${categoryIndex}-${index}`;
+            const label = document.createElement('label');
+            label.className = 'checklist-item';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = Boolean(eventChecks[key]);
+            const copy = document.createElement('span');
+            copy.className = 'checklist-copy';
+            const itemTitle = document.createElement('span');
+            itemTitle.className = 'checklist-title';
+            itemTitle.textContent = item.title;
+            const note = document.createElement('span');
+            note.className = 'checklist-note';
+            note.textContent = item.note;
+            const clue = document.createElement('span');
+            clue.className = 'checklist-clue';
+            clue.textContent = item.clue;
+            copy.append(itemTitle, note, clue);
+            label.append(checkbox, copy);
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) eventChecks[key] = true;
+                else delete eventChecks[key];
+                refreshCategoryCount();
+                refreshProgress();
+            });
+            list.appendChild(label);
+        });
+        section.appendChild(list);
+        eventsContainer.appendChild(section);
+        refreshCategoryCount();
+    });
+    refreshProgress();
+}
+
 /* Switch between the two panels */
 document.querySelectorAll(".tool-tab").forEach(button => {
     button.addEventListener("click", () => {
@@ -1081,12 +1169,7 @@ document.getElementById("resetEvents")
         Object.keys(eventChecks).forEach(
             key => delete eventChecks[key]
         );
-        renderChecklist(
-            eventsContainer,
-            eventItems,
-            eventChecks,
-            "event-"
-        );
+        renderEventCategories();
     });
 
 renderChecklist(
@@ -1096,12 +1179,7 @@ renderChecklist(
     "investigation-"
 );
 
-renderChecklist(
-    eventsContainer,
-    eventItems,
-    eventChecks,
-    "event-"
-);
+renderEventCategories();
 
 function createEvidenceButtons() {
     evidenceGrid.innerHTML = '';
