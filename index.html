@@ -530,6 +530,20 @@
 .timer-station-note{font-size:.7rem;color:#aab1c2;line-height:1.5;margin:0 2px}
 @media(max-width:600px){.timer-clock{font-size:1.35rem}}
 
+
+/* Manual ghost eliminations (independent of evidence). */
+.clear-crossouts,.crossout-btn{border:1px solid #665184;background:#292238;color:#ddd0ff;border-radius:7px;padding:8px 10px;font:inherit;font-size:.78rem;cursor:pointer;touch-action:manipulation}
+.clear-crossouts:hover,.crossout-btn:hover{background:#3b2b56}
+.crossout-tip{color:#94a3b8;font-size:.78rem;margin:-7px 0 15px}
+.ghost-card.manually-crossed{opacity:.58;border-color:#735067;background:#211d28}
+.ghost-card.manually-crossed .ghost-name{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:#fb7185;color:#a6a2af}
+.ghost-card.manually-crossed .ghost-status{color:#fda4af;border-color:#85485a}
+.ghost-card.manually-crossed .crossout-btn{color:#c4b5fd}
+.ghost-card.evidence-excluded:not(.manually-crossed){opacity:.24;transform:none;pointer-events:auto}
+.ghost-card.evidence-excluded .ghost-status{color:#fca5a5}
+.ghost-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
+.ghost-card-actions .intel-btn{margin:0}
+@media(max-width:500px){.ghost-card-actions{grid-template-columns:1fr 1fr}.clear-crossouts{font-size:.72rem}}
 </style>
 </head>
 <body>
@@ -618,7 +632,7 @@
     </aside>
 
     <main class="main-panel">
-        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span></div>
+        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span><button type="button" id="clearCrossOuts" class="clear-crossouts">Clear Cross-Outs</button></div><p class="crossout-tip">Tap <strong>Cross Out</strong> to manually rule out a ghost based on its behavior. Tap Restore to undo.</p>
         <div class="match-progress" role="progressbar" aria-label="Ghosts still possible" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30" id="matchProgress"><span id="matchProgressFill"></span></div>
         <div class="ghost-grid" id="ghostGrid"></div>
     </main>
@@ -949,6 +963,7 @@ evidences.forEach(e => evidenceState[e] = "neutral");
 const evidenceGrid = document.getElementById('evidenceGrid');
 const ghostGrid = document.getElementById('ghostGrid');
 const resetBtn = document.getElementById('resetBtn');
+const manualCrossOuts = new Set();
 
 /* Investigation tools: separate state from the evidence journal */
 const investigationChecks = {};
@@ -1167,7 +1182,20 @@ function createGhostCards() {
             box.style.display = isOpen ? 'none' : 'block';
             intelBtn.textContent = isOpen ? 'View Ghost Intel' : 'Hide Ghost Intel';
         };
-        card.appendChild(intelBtn);
+        const crossBtn = document.createElement('button');
+        crossBtn.type = 'button';
+        crossBtn.className = 'crossout-btn';
+        crossBtn.textContent = '✕ Cross Out';
+        crossBtn.setAttribute('aria-label', 'Cross out ' + ghost.name);
+        crossBtn.addEventListener('click', () => {
+            if (manualCrossOuts.has(ghost.name)) manualCrossOuts.delete(ghost.name);
+            else manualCrossOuts.add(ghost.name);
+            filterGhosts();
+        });
+        const cardActions = document.createElement('div');
+        cardActions.className = 'ghost-card-actions';
+        cardActions.append(crossBtn, intelBtn);
+        card.appendChild(cardActions);
 
         const intelBox = document.createElement('div');
         intelBox.className = 'intel-box';
@@ -1202,14 +1230,17 @@ function filterGhosts() {
             }
         }
 
-        if (isExcluded) {
-            card.classList.add('excluded');
-            card.querySelector('.ghost-status').textContent = 'Ruled out';
-        } else {
-            remaining++;
-            card.classList.remove('excluded');
-            card.querySelector('.ghost-status').textContent = 'Possible';
-        }
+        const manual = manualCrossOuts.has(ghost.name);
+        card.classList.remove('excluded');
+        card.classList.toggle('evidence-excluded', isExcluded);
+        card.classList.toggle('manually-crossed', manual);
+        const status = card.querySelector('.ghost-status');
+        status.textContent = manual ? 'Crossed out' : isExcluded ? 'Ruled out by evidence' : 'Possible';
+        const crossBtn = card.querySelector('.crossout-btn');
+        crossBtn.textContent = manual ? '↶ Restore' : '✕ Cross Out';
+        crossBtn.setAttribute('aria-label', (manual ? 'Restore ' : 'Cross out ') + ghost.name);
+        crossBtn.setAttribute('aria-pressed', String(manual));
+        if (!isExcluded && !manual) remaining++;
     });
     document.getElementById('matchCount').textContent = `${remaining} of ${ghosts.length} possible`;
     const meter = document.getElementById('matchProgress');
@@ -1218,7 +1249,10 @@ function filterGhosts() {
     document.getElementById('matchProgressFill').style.width = `${100 * remaining / ghosts.length}%`;
 }
 
+document.getElementById('clearCrossOuts').addEventListener('click', () => { manualCrossOuts.clear(); filterGhosts(); });
+
 resetBtn.addEventListener('click', () => {
+    manualCrossOuts.clear();
     evidences.forEach(e => evidenceState[e] = "neutral");
     createEvidenceButtons();
     filterGhosts();
