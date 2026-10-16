@@ -532,6 +532,9 @@
 
 
 /* Manual ghost eliminations (independent of evidence). */
+.collapse-intel-btn{border:1px solid #52678d;background:#24334a;color:#bfdbfe;border-radius:7px;padding:8px 10px;font:inherit;font-size:.78rem;cursor:pointer;touch-action:manipulation}
+.collapse-intel-btn:hover{background:#304668}
+.collapse-intel-btn:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 .clear-crossouts,.crossout-btn{border:1px solid #665184;background:#292238;color:#ddd0ff;border-radius:7px;padding:8px 10px;font:inherit;font-size:.78rem;cursor:pointer;touch-action:manipulation}
 .clear-crossouts:hover,.crossout-btn:hover{background:#3b2b56}
 .crossout-tip{color:#94a3b8;font-size:.78rem;margin:-7px 0 15px}
@@ -645,7 +648,7 @@
     </aside>
 
     <main class="main-panel">
-        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span><button type="button" id="clearCrossOuts" class="clear-crossouts">Clear Cross-Outs</button></div><p class="crossout-tip">Tap <strong>Cross Out</strong> to manually rule out a ghost based on its behavior. Tap Restore to undo.</p>
+        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span><button type="button" id="collapseAllIntel" class="collapse-intel-btn">Collapse All Intel</button><button type="button" id="clearCrossOuts" class="clear-crossouts">Clear Cross-Outs</button></div><p class="crossout-tip">Tap <strong>Cross Out</strong> to manually rule out a ghost based on its behavior. Tap Restore to undo.</p>
         <div class="match-progress" role="progressbar" aria-label="Ghosts still possible" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30" id="matchProgress"><span id="matchProgressFill"></span></div>
         <div class="ghost-grid" id="ghostGrid"></div>
     </main>
@@ -1254,11 +1257,13 @@ function createGhostCards() {
         const intelBtn = document.createElement('button');
         intelBtn.className = 'intel-btn';
         intelBtn.textContent = 'View Ghost Intel';
+        intelBtn.setAttribute('aria-expanded', 'false');
         intelBtn.onclick = () => {
             const box = card.querySelector('.intel-box');
             const isOpen = box.style.display === 'block';
             box.style.display = isOpen ? 'none' : 'block';
             intelBtn.textContent = isOpen ? 'View Ghost Intel' : 'Hide Ghost Intel';
+            intelBtn.setAttribute('aria-expanded', String(!isOpen));
         };
         const crossBtn = document.createElement('button');
         crossBtn.type = 'button';
@@ -1326,6 +1331,14 @@ function filterGhosts() {
     meter.setAttribute('aria-valuenow', String(remaining));
     document.getElementById('matchProgressFill').style.width = `${100 * remaining / ghosts.length}%`;
 }
+
+document.getElementById('collapseAllIntel').addEventListener('click', () => {
+    document.querySelectorAll('#ghostGrid .intel-box').forEach(box => { box.style.display = 'none'; });
+    document.querySelectorAll('#ghostGrid .intel-btn').forEach(button => {
+        button.textContent = 'View Ghost Intel';
+        button.setAttribute('aria-expanded', 'false');
+    });
+});
 
 document.getElementById('clearCrossOuts').addEventListener('click', () => { manualCrossOuts.clear(); filterGhosts(); });
 
