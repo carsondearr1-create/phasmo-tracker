@@ -565,6 +565,50 @@
 .ghost-card.behavior-excluded .ghost-status {color:#fda4af;border-color:#85485a}
 .behavior-reason {font-size:.72rem;line-height:1.5;color:#fda4af;border-top:1px solid #4b3545;padding-top:9px;overflow-wrap:anywhere}
 .behavior-reason[hidden] {display:none}
+
+/* Clue-filter switch, separate from evidence and manual cross-outs. */
+.behavior-filter-switch {display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid #6d4c9c;border-radius:8px;background:#261f36;color:#e9d5ff;font-size:.78rem;line-height:1.5;margin-bottom:12px;cursor:pointer}
+.behavior-filter-switch input {accent-color:#a78bfa;margin-top:3px;flex-shrink:0}
+/* Independent desktop scrolling for evidence/tools and ghost cards. */
+@media (min-width: 851px) {
+  .tracker-layout { align-items: stretch; }
+  .tracker-layout > .sidebar,
+  .tracker-layout > .main-panel {
+    height: calc(100vh - 32px);
+    height: calc(100dvh - 32px);
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    scrollbar-width: auto;
+    scrollbar-color: #a78bfa #1b1b25;
+  }
+  .tracker-layout > .sidebar {
+    position: static;
+    box-sizing: border-box;
+  }
+  .tracker-layout > .main-panel {
+    padding-right: 8px;
+    box-sizing: border-box;
+  }
+  .tracker-layout > .sidebar::-webkit-scrollbar,
+  .tracker-layout > .main-panel::-webkit-scrollbar { width: 12px; }
+  .tracker-layout > .sidebar::-webkit-scrollbar-track,
+  .tracker-layout > .main-panel::-webkit-scrollbar-track { background: #1b1b25; }
+  .tracker-layout > .sidebar::-webkit-scrollbar-thumb,
+  .tracker-layout > .main-panel::-webkit-scrollbar-thumb {
+    background: #a78bfa;
+    border-radius: 9px;
+  }
+}
+/* On narrow touch screens keep normal page scrolling and avoid nested scroll traps. */
+@media (max-width: 850px) {
+  .tracker-layout > .sidebar,
+  .tracker-layout > .main-panel { height: auto; overflow: visible; }
+}
+.ghost-card.behavior-highlight:not(.behavior-excluded):not(.manually-crossed):not(.evidence-excluded) {border-color:#60a5fa;box-shadow:0 0 0 1px #60a5fa55,0 4px 20px #3b82f633}
+.ghost-card.behavior-highlight .ghost-status {color:#93c5fd;border-color:#60a5fa}
+.ghost-card.behavior-highlight .behavior-reason {color:#93c5fd;border-top-color:#334e75}
 </style>
 </head>
 <body>
@@ -638,14 +682,15 @@
     <div class="tool-heading">
         <div>
             <h2>Events &amp; Behavior</h2>
-            <p>Open a category, check observations, and compare possible ghosts. Verified observations can automatically rule out ghosts.</p>
+            <p>Open a category, check observations, and compare possible ghosts. Decisive observations cross out ghosts; other observations highlight likely matches.</p>
         </div>
         <button type="button" class="reset-btn" id="resetEvents">
             Reset
         </button>
     </div>
+    <label class="behavior-filter-switch"><input type="checkbox" id="filterByBehaviorClues" checked> <strong>Cross out ghosts that do not match selected behavior clues</strong></label>
     <div class="checklist-legend">
-        Behavior exclusions cross out ghosts on the right but never change your evidence selections. Uncheck an observation to reverse it.
+        With clue filtering ON, selected clues cross out ghosts that do not match. These are investigative filters, NOT proof; turn the switch off to show only definitive behavior exclusions. Evidence remains separate.
     </div>
     <div id="eventsChecklist" class="event-categories"></div>
 </section>
@@ -799,6 +844,166 @@ eventCategories.push({ name: "Advanced Ghost Tests", icon: "🔎", items: [
  { title:"Ghost skips footsteps during walking ghost event", note:"Possible Obake clue from supplied notes; not verified for automatic elimination.", clue:"Possible: Obake" },
  { title:"Held lighter goes out unusually quickly", note:"Possible Onryo clue from supplied notes; other explanations exist.", clue:"Possible: Onryo" }
 ]});
+
+// Map suggestive checklist observations to ghost-card highlights.
+// Hints are NOT eliminations; only explicitly defined rulesOut can cross out.
+const behaviorHighlightMap = {
+  "Ghost mist / airball event witnessed": [],
+  "Singing ghost event": [
+    "Banshee"
+  ],
+  "Ghost disappears when photographed": [
+    "Phantom"
+  ],
+  "Front exit door manipulated outside hunt/event": [
+    "Yurei"
+  ],
+  "Ghost repeatedly interacts with one player": [
+    "Banshee"
+  ],
+  "Ghost is unusually hard to see while blinking": [
+    "Phantom",
+    "Oni"
+  ],
+  "Ghost changes model briefly during a hunt": [
+    "Obake"
+  ],
+  "Ghost is quiet until very close": [
+    "Myling"
+  ],
+  "Ghost becomes very fast after detecting a player": [
+    "Revenant"
+  ],
+  "Ghost slows dramatically near a player": [
+    "Deogen"
+  ],
+  "Ghost speeds up near powered electronics": [
+    "Raiju"
+  ],
+  "Ghost speed varies with room temperature": [
+    "Hantu"
+  ],
+  "Ghost speed changes with player movement": [
+    "Dayan"
+  ],
+  "Ghost seems faster or slower over time": [
+    "Thaye",
+    "Moroi",
+    "Obambo"
+  ],
+  "Hunt ends unusually near a hiding spot": [
+    "Aswang"
+  ],
+  "Heavy breathing through Spirit Box": [
+    "Deogen"
+  ],
+  "Spirit Box response received": [
+    "Moroi"
+  ],
+  "Parabolic microphone scream / wail": [
+    "Banshee"
+  ],
+  "Ghost does not disturb salt": [
+    "Wraith",
+    "Gallu"
+  ],
+  "Six-finger handprint or unusual UV print": [
+    "Obake"
+  ],
+  "D.O.T.S. only visible on video": [
+    "Goryo"
+  ],
+  "Extra Ghost Orbs alongside other evidence": [
+    "The Mimic"
+  ],
+  "Spirit Box forced on limited-evidence difficulty": [
+    "Deogen"
+  ],
+  "Multiple items thrown in a burst": [
+    "Poltergeist",
+    "The Mimic"
+  ],
+  "Object-throwing pattern changes hunt speed": [
+    "Deildegast"
+  ],
+  "Ghost immediately turns a light off": [
+    "Mare"
+  ],
+  "Breaker interactions or speed depend on breaker": [
+    "Jinn",
+    "Hantu"
+  ],
+  "Ghost remains in its room": [
+    "Goryo"
+  ],
+  "Ghost becomes less active with time": [
+    "Thaye"
+  ],
+  "Hunt begins at unusually high sanity": [
+    "Demon",
+    "Thaye",
+    "Raiju",
+    "Yokai",
+    "Mare",
+    "Onryo"
+  ],
+  "Hunt begins at unusually low sanity": [
+    "Shade"
+  ],
+  "Incense delays a hunt much longer": [
+    "Spirit",
+    "Demon"
+  ],
+  "Three firelight extinguishes": [
+    "Onryo"
+  ],
+  "Crucifix behaves unusually": [
+    "Demon",
+    "Onryo",
+    "Gallu"
+  ],
+  "Ghost won't interact or hunt in a player's room": [
+    "Shade"
+  ],
+  "Ghost passes through salt without disturbing it": [
+    "Wraith",
+    "Gallu"
+  ],
+  "Oni-like ghost stays visible for longer during hunt blinks": [
+    "Oni"
+  ],
+  "Ghost activity increases around grouped players": [
+    "Oni"
+  ],
+  "Aswang-like hunt accelerates rapidly": [
+    "Aswang"
+  ],
+  "Ghost switches to a faster BASE speed across hunts": [
+    "Obambo",
+    "The Twins"
+  ],
+  "Gallu reacts to salt or protective equipment": [
+    "Gallu"
+  ],
+  "Unique Banshee target roaming or singing pattern": [
+    "Banshee"
+  ],
+  "Ghost speed depends on nearby player movement": [
+    "Dayan"
+  ],
+  "Ghost speed slows after many unique props are moved": [
+    "Deildegast"
+  ],
+  "Ghost skips footsteps during walking ghost event": [
+    "Obake"
+  ],
+  "Held lighter goes out unusually quickly": [
+    "Onryo"
+  ]
+};
+eventCategories.forEach(category => category.items.forEach(item => {
+  item.highlights = behaviorHighlightMap[item.title] || [];
+}));
 
 // Reviewed against July–October 2026 ghost guides. Normal speeds assume 100% ghost-speed difficulty.
 const ghostHuntSpeeds = {
@@ -1343,7 +1548,14 @@ function createGhostCards() {
     });
 }
 
+document.getElementById('filterByBehaviorClues').addEventListener('change', filterGhosts);
 function filterGhosts() {
+    const useClueFiltering = document.getElementById('filterByBehaviorClues').checked;
+    const selectedClues = eventCategories.flatMap((category, ci) =>
+        category.items.filter((item, ii) =>
+            eventChecks[`event-${ci}-${ii}`] && (item.highlights || []).length > 0
+        )
+    );
     let remaining = 0;
     ghosts.forEach(ghost => {
         const card = document.getElementById('ghost-' + ghost.name.replace(/\s+/g, ''));
@@ -1368,16 +1580,20 @@ function filterGhosts() {
             if ((item.rulesOut || []).includes(ghost.name)) behaviorReasons.push(item.title);
             if ((item.highlights || []).includes(ghost.name)) behaviorHints.push(item.title);
         }));
-        const behaviorExcluded = behaviorReasons.length > 0;
+        const clueMismatch = useClueFiltering && selectedClues.length > 0 &&
+            ghost.name !== 'The Mimic' &&
+            selectedClues.some(item => !(item.highlights || []).includes(ghost.name));
+        const behaviorExcluded = behaviorReasons.length > 0 || clueMismatch;
         const manual = manualCrossOuts.has(ghost.name);
         card.classList.remove('excluded');
         card.classList.toggle('evidence-excluded', isExcluded);
         card.classList.toggle('manually-crossed', manual);
         card.classList.toggle('behavior-excluded', behaviorExcluded);
+        card.classList.toggle('behavior-highlight', !isExcluded && !manual && !behaviorExcluded && behaviorHints.length > 0);
         const status = card.querySelector('.ghost-status');
-        status.textContent = manual ? 'Crossed out manually' : isExcluded ? 'Ruled out by evidence' : behaviorExcluded ? 'Ruled out by behavior' : behaviorHints.length ? 'Behavior match' : 'Possible';
+        status.textContent = manual ? 'Crossed out manually' : isExcluded ? 'Ruled out by evidence' : behaviorReasons.length ? 'Ruled out by behavior' : clueMismatch ? 'Filtered by clue' : behaviorHints.length ? 'Behavior match' : 'Possible';
         const reason = card.querySelector('.behavior-reason');
-        reason.textContent = behaviorReasons.length ? 'Behavior: ' + behaviorReasons.join('; ') : behaviorHints.length ? 'Clues: ' + behaviorHints.join('; ') : '';
+        reason.textContent = behaviorReasons.length ? 'Decisive behavior: ' + behaviorReasons.join('; ') : clueMismatch ? 'Does not match all selected behavior clues (not a definitive exclusion).' : behaviorHints.length ? 'Matching clues: ' + behaviorHints.join('; ') : '';
         reason.hidden = !reason.textContent;
         const crossBtn = card.querySelector('.crossout-btn');
         crossBtn.textContent = manual ? '↶ Restore' : '✕ Cross Out';
