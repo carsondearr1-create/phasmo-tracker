@@ -613,6 +613,14 @@
 .ghost-card.behavior-highlight:not(.behavior-excluded):not(.manually-crossed):not(.evidence-excluded) {border-color:#60a5fa;box-shadow:0 0 0 1px #60a5fa55,0 4px 20px #3b82f633}
 .ghost-card.behavior-highlight .ghost-status {color:#93c5fd;border-color:#60a5fa}
 .ghost-card.behavior-highlight .behavior-reason {color:#93c5fd;border-top-color:#334e75}
+
+.global-search{margin:0 0 18px;padding:18px;border:1px solid #66518e;background:#201b30;border-radius:14px;position:relative;z-index:2}
+.search-title{color:#e9d5ff;font-weight:800;margin-bottom:10px}.search-title span{font-weight:400;color:#c4b5d8;font-size:.78rem;margin-left:8px}
+.search-controls{display:flex;gap:10px;flex-wrap:wrap}.search-controls input{flex:1;min-width:210px;padding:12px 14px;background:#14121f;border:1px solid #8068b2;border-radius:8px;color:#fff;font:inherit}.search-controls input:focus{outline:2px solid #a78bfa}
+.guide-all,.search-result a,.search-result button{display:inline-flex;align-items:center;justify-content:center;padding:9px 11px;background:#493467;border:1px solid #8068b2;border-radius:8px;color:#fff;text-decoration:none;font:inherit;font-size:.8rem;cursor:pointer}
+.search-results{max-height:320px;overflow-y:auto;margin-top:12px;scrollbar-color:#a78bfa #201b30}.search-result{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px;border-top:1px solid #4b3a65;flex-wrap:wrap}.search-result strong{color:#e9d5ff}.search-result small{display:block;color:#c6bad6;margin-top:4px}.search-result-actions{display:flex;gap:7px;flex-wrap:wrap}.search-empty{color:#c6bad6;padding:12px}
+.ghost-card.search-target{outline:3px solid #f0abfc;box-shadow:0 0 24px #c084fc88}
+@media(max-width:600px){.global-search{padding:12px}.search-title span{display:block;margin-left:0}.search-controls input{min-width:100%}}
 </style>
 </head>
 <body>
@@ -625,6 +633,11 @@
   <p class="header-help">Tap evidence once for <b class="found-text">found</b>, twice for <b class="rejected-text">ruled out</b>, and a third time to clear it. Ghosts that don't match fade away.</p>
 </header>
 
+<section class="global-search" aria-label="Ghost search">
+  <div class="search-title">🔎 Ghost Search <span>Find evidence, behaviors, and ghost guides</span></div>
+  <div class="search-controls"><input id="ghostSearch" type="search" placeholder="Try UV, EMF 5, quiet footsteps, breaker, Obake..." autocomplete="off" aria-label="Search ghosts, evidence and behavior"><a class="guide-all" href="ghost-guide.html" target="_blank" rel="noopener">📖 Full Ghost Encyclopedia ↗</a></div>
+  <div id="ghostSearchResults" class="search-results" aria-live="polite" hidden></div>
+</section>
 <div class="tracker-layout">
     <aside class="sidebar">
     <div class="section-title">Evidence Panel</div>
@@ -1534,6 +1547,17 @@ filterGhosts();
  setInterval(render,200);render();
 })();
 
+
+// Search is a read-only navigator: never modifies evidence or cross-outs.
+const searchInput=document.getElementById('ghostSearch');
+const searchResults=document.getElementById('ghostSearchResults');
+const searchAliases={'emf 5':'EMF Level 5','emf5':'EMF Level 5','uv':'Ultraviolet','dots':'D.O.T.S. Projector','dot':'D.O.T.S. Projector','orbs':'Ghost Orb','freezing':'Freezing Temps','writing':'Ghost Writing'};
+function searchText(ghost){return [ghost.name,...ghost.evidence,...ghost.intel,ghostHuntSpeeds[ghost.name]||''].join(' ').toLowerCase();}
+function matchesSearch(ghost,query){let terms=query.toLowerCase().trim().split(/\s+/).filter(Boolean);return terms.every(term=>{let mapped=searchAliases[term]||term;return searchText(ghost).includes(mapped.toLowerCase())||searchText(ghost).includes(term);}) || Object.entries(searchAliases).some(([alias,evidence])=>query.toLowerCase().trim()===alias&&ghost.evidence.includes(evidence));}
+function goToGhost(name){const card=document.getElementById('ghost-'+name.replace(/\s+/g,''));if(!card)return;document.querySelectorAll('.ghost-card.search-target').forEach(c=>c.classList.remove('search-target'));card.classList.add('search-target');const pane=document.querySelector('.main-panel');if(window.innerWidth>850&&pane&&pane.scrollHeight>pane.clientHeight){pane.scrollTo({top:card.offsetTop-pane.offsetTop-18,behavior:'smooth'});}else card.scrollIntoView({behavior:'smooth',block:'center'});}
+function renderSearchResults(){const q=searchInput.value.trim();searchResults.replaceChildren();searchResults.hidden=!q;if(!q)return;const found=ghosts.filter(g=>matchesSearch(g,q));if(!found.length){const msg=document.createElement('p');msg.className='search-empty';msg.textContent='No matching ghosts. Try a ghost name, evidence type, or another behavior keyword.';searchResults.append(msg);return;}found.forEach(g=>{const row=document.createElement('div');row.className='search-result';const summary=document.createElement('div');const name=document.createElement('strong');name.textContent=g.name;const ev=document.createElement('small');ev.textContent=g.evidence.join(' · ');summary.append(name,ev);const actions=document.createElement('div');actions.className='search-result-actions';const jump=document.createElement('button');jump.type='button';jump.textContent='Go to Card';jump.onclick=()=>goToGhost(g.name);const guide=document.createElement('a');guide.href='ghost-guide.html#'+encodeURIComponent(g.name);guide.target='_blank';guide.rel='noopener';guide.textContent='Full Guide ↗';actions.append(jump,guide);row.append(summary,actions);searchResults.append(row);});}
+searchInput.addEventListener('input',renderSearchResults);
+if(location.hash){const targetName=decodeURIComponent(location.hash.slice(1));if(ghosts.some(g=>g.name===targetName))requestAnimationFrame(()=>goToGhost(targetName));}
 </script>
 
 <footer class="tracker-sources" style="max-width:1600px;width:100%;margin:28px auto 12px;color:#94a3b8;font-size:0.78rem;line-height:1.7;text-align:center;">
