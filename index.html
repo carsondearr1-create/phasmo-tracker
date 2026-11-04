@@ -560,6 +560,11 @@
 .event-category-list { padding: 0 9px 10px; }
 .event-category-list .checklist-item { margin-top: 7px; }
 
+.ghost-card.behavior-excluded {opacity:.45;border-color:#9f5267;background:#241b25}
+.ghost-card.behavior-excluded .ghost-name {text-decoration:line-through;text-decoration-color:#fb7185;text-decoration-thickness:2px}
+.ghost-card.behavior-excluded .ghost-status {color:#fda4af;border-color:#85485a}
+.behavior-reason {font-size:.72rem;line-height:1.5;color:#fda4af;border-top:1px solid #4b3545;padding-top:9px;overflow-wrap:anywhere}
+.behavior-reason[hidden] {display:none}
 </style>
 </head>
 <body>
@@ -633,14 +638,14 @@
     <div class="tool-heading">
         <div>
             <h2>Events &amp; Behavior</h2>
-            <p>Open a category, check observations, and compare possible ghosts. No automatic eliminations.</p>
+            <p>Open a category, check observations, and compare possible ghosts. Verified observations can automatically rule out ghosts.</p>
         </div>
         <button type="button" class="reset-btn" id="resetEvents">
             Reset
         </button>
     </div>
     <div class="checklist-legend">
-        These are behavioral clues, not automatic evidence confirmations.
+        Behavior exclusions cross out ghosts on the right but never change your evidence selections. Uncheck an observation to reverse it.
     </div>
     <div id="eventsChecklist" class="event-categories"></div>
 </section>
@@ -648,7 +653,7 @@
     </aside>
 
     <main class="main-panel">
-        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span><button type="button" id="collapseAllIntel" class="collapse-intel-btn">Collapse All Intel</button><button type="button" id="clearCrossOuts" class="clear-crossouts">Clear Cross-Outs</button></div><p class="crossout-tip">Tap <strong>Cross Out</strong> to manually rule out a ghost based on its behavior. Tap Restore to undo.</p>
+        <div class="matches-heading"><div class="section-title">Matching Ghosts</div><span id="matchCount" class="match-count" aria-live="polite">30 of 30 possible</span><button type="button" id="collapseAllIntel" class="collapse-intel-btn">Collapse All Intel</button><button type="button" id="clearCrossOuts" class="clear-crossouts">Clear Cross-Outs</button></div><p class="crossout-tip">Behavior observations can automatically cross out ghosts; manual Cross Out remains independent. Tap Restore to undo manual exclusions.</p>
         <div class="match-progress" role="progressbar" aria-label="Ghosts still possible" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30" id="matchProgress"><span id="matchProgressFill"></span></div>
         <div class="ghost-grid" id="ghostGrid"></div>
     </main>
@@ -731,7 +736,7 @@ const investigationItems = [
 // Behavior observations are prompts for manual investigation, not automatic exclusions.
 const eventCategories = [
   { name: "Ghost Events", icon: "👻", items: [
-    { title: "Ghost mist / airball event witnessed", note: "Oni and Kormos cannot perform this event. The Mimic can copy other ghost behaviors; don't automatically rule it out.", clue: "Rule-out clue: Oni / Kormos" },
+    { title: "Ghost mist / airball event witnessed", note: "Oni and Kormos cannot perform this event. The Mimic can copy other ghost behaviors; don't automatically rule it out.", clue: "Automatically rule out: Oni / Kormos", rulesOut: ["Oni", "Kormos"] },
     { title: "Singing ghost event", note: "Banshees favor singing events, but many ghosts can sing. This is suggestive, not proof.", clue: "Consider: Banshee" },
     { title: "Ghost disappears when photographed", note: "A successfully photographed Phantom disappears from view during the event; check that you actually captured the ghost.", clue: "Strong test: Phantom" },
     { title: "Front exit door manipulated outside hunt/event", note: "A Yurei can interact with the front door outside a hunt or ghost event. Distinguish this from normal event behavior.", clue: "Strong clue: Yurei" },
@@ -776,6 +781,25 @@ const eventCategories = [
     { title: "Ghost won't interact or hunt in a player's room", note: "Shade has restrictions on some interactions and hunts when a player shares its room. Confirm the actual ghost location.", clue: "Consider: Shade" }
   ]}
 ];
+// Extra observations from the supplied notes. The `rulesOut` property is
+// intentionally limited to reliable, explicitly observed impossibilities.
+eventCategories.push({ name: "Advanced Ghost Tests", icon: "🔎", items: [
+ { title:"Ghost clearly steps in / disturbs placed salt", note:"A Wraith cannot disturb salt. This does NOT change Ultraviolet evidence or eliminate Gallu.", clue:"Automatically rule out: Wraith", rulesOut:["Wraith"] },
+ { title:"Ghost passes through salt without disturbing it", note:"Only check if the ghost actually passed through. This suggests Wraith, but does not prove it; Gallu can also avoid salt.", clue:"Consider: Wraith / Gallu" },
+ { title:"Oni-like ghost stays visible for longer during hunt blinks", note:"Oni is often visible longer than other ghosts; use repeated blinks.", clue:"Consider: Oni" },
+ { title:"Ghost activity increases around grouped players", note:"Possible Oni behavior, not unique enough to exclude other ghosts.", clue:"Consider: Oni" },
+ { title:"Aswang-like hunt accelerates rapidly", note:"Compare the acceleration pattern over several hunts; ordinary line-of-sight acceleration can look similar.", clue:"Consider: Aswang" },
+ { title:"Ghost switches to a faster BASE speed across hunts", note:"Compare at the same distance and without line of sight; may distinguish Obambo or Twins from Aswang. Not automatically conclusive.", clue:"Compare: Aswang / Obambo / Twins" },
+ { title:"Gallu reacts to salt or protective equipment", note:"Watch for changes between normal, enraged and weakened states. Do not use salt avoidance to reject UV.", clue:"Consider: Gallu" },
+ { title:"Ghost hunts less than 180s after confirmed effective incense", note:"For a normal, non-cursed hunt, this rules out Spirit. Only select if the cleanse definitely affected the ghost.", clue:"Automatically rule out: Spirit", rulesOut:["Spirit"] },
+ { title:"Ghost turns a room light ON itself", note:"A Mare cannot turn a room light on. Distinguish room lights from TVs and computers.", clue:"Automatically rule out: Mare", rulesOut:["Mare"] },
+ { title:"Unique Banshee target roaming or singing pattern", note:"Singing alone is not proof. Look for multiple target-specific observations.", clue:"Consider: Banshee" },
+ { title:"Ghost speed depends on nearby player movement", note:"A Dayan can change speed depending on whether the closest player within 10m moves.", clue:"Consider: Dayan" },
+ { title:"Ghost speed slows after many unique props are moved", note:"Deildegast's speed can change with eligible object movement; the count resets after hunts.", clue:"Consider: Deildegast" },
+ { title:"Ghost skips footsteps during walking ghost event", note:"Possible Obake clue from supplied notes; not verified for automatic elimination.", clue:"Possible: Obake" },
+ { title:"Held lighter goes out unusually quickly", note:"Possible Onryo clue from supplied notes; other explanations exist.", clue:"Possible: Onryo" }
+]});
+
 // Reviewed against July–October 2026 ghost guides. Normal speeds assume 100% ghost-speed difficulty.
 const ghostHuntSpeeds = {
     "Aswang": "1.53 m/s base; unusually fast line-of-sight acceleration (up to ~2.53 m/s).",
@@ -972,6 +996,25 @@ const updatedIntel = {
     ]
 };
 
+// Additive updates from the supplied ghost notes. Existing verified intel remains intact.
+const supplementalIntel = {
+ "Aswang": ["Accelerates unusually quickly in line of sight, reaching about 2.53 m/s after 8.67 seconds; compare base speeds over multiple hunts."],
+ "Banshee": ["Singing ghost events are more common than for typical ghosts; a singing event alone is not conclusive.", "Its target-focused roaming and D.O.T.S. movement can offer additional clues; compare repeated observations."],
+ "Dayan": ["Within 10 m, the closest player's movement determines its special speed, even if that player is on another floor or hidden."],
+ "Deildegast": ["Its object counter resets after a completed hunt or a blocked hunt. Compare unique eligible props rather than equipment or doors."],
+ "Demon": ["An ordinary hunt beginning less than 25 seconds after the previous hunt, or 60–90 seconds after effective incense, is a Demon clue; exclude cursed hunts."],
+ "Deogen": ["Often interacts with doors; during hunts it repeatedly selects a nearby player and tracks player locations."],
+ "Gallu": ["Salt contact, incense blinding, and crucifix burns may trigger changes between normal, enraged, and weakened states. An enraged hunt ending changes it to weakened."],
+ "Mare": ["Proposed test from submitted notes: television/computer power interactions. Treat as an unverified clue, not an automatic exclusion."],
+ "Myling": ["More frequent paranormal sounds on a parabolic microphone are suggestive, not conclusive."],
+ "Obake": ["Submitted observation: a walking ghost event may omit a footstep or two. Treat as an unverified clue."],
+ "Onryo": ["Submitted lighter test: a held lit lighter extinguishing quickly is a possible clue, not a guaranteed identification."],
+ "Poltergeist": ["Submitted environmental restrictions (cars, candles, mannequins and dirty water) need verification before use as exclusions."]
+};
+ghosts.forEach(ghost => {
+  if (supplementalIntel[ghost.name]) ghost.intel.push(...supplementalIntel[ghost.name]);
+});
+
 ghosts.forEach(ghost => {
     if (updatedIntel[ghost.name]) {
         ghost.intel = updatedIntel[ghost.name];
@@ -1126,6 +1169,7 @@ function renderEventCategories() {
                 else delete eventChecks[key];
                 refreshCategoryCount();
                 refreshProgress();
+                filterGhosts();
             });
             list.appendChild(label);
         });
@@ -1173,6 +1217,7 @@ document.getElementById("resetEvents")
             key => delete eventChecks[key]
         );
         renderEventCategories();
+        filterGhosts();
     });
 
 renderChecklist(
@@ -1290,7 +1335,10 @@ function createGhostCards() {
         });
         intelBox.appendChild(intelList);
         card.appendChild(intelBox);
-
+        const reason = document.createElement('div');
+        reason.className = 'behavior-reason';
+        reason.setAttribute('aria-live', 'polite');
+        card.appendChild(reason);
         ghostGrid.appendChild(card);
     });
 }
@@ -1313,17 +1361,29 @@ function filterGhosts() {
             }
         }
 
+        const behaviorReasons = [];
+        const behaviorHints = [];
+        eventCategories.forEach((category, ci) => category.items.forEach((item, ii) => {
+            if (!eventChecks[`event-${ci}-${ii}`]) return;
+            if ((item.rulesOut || []).includes(ghost.name)) behaviorReasons.push(item.title);
+            if ((item.highlights || []).includes(ghost.name)) behaviorHints.push(item.title);
+        }));
+        const behaviorExcluded = behaviorReasons.length > 0;
         const manual = manualCrossOuts.has(ghost.name);
         card.classList.remove('excluded');
         card.classList.toggle('evidence-excluded', isExcluded);
         card.classList.toggle('manually-crossed', manual);
+        card.classList.toggle('behavior-excluded', behaviorExcluded);
         const status = card.querySelector('.ghost-status');
-        status.textContent = manual ? 'Crossed out' : isExcluded ? 'Ruled out by evidence' : 'Possible';
+        status.textContent = manual ? 'Crossed out manually' : isExcluded ? 'Ruled out by evidence' : behaviorExcluded ? 'Ruled out by behavior' : behaviorHints.length ? 'Behavior match' : 'Possible';
+        const reason = card.querySelector('.behavior-reason');
+        reason.textContent = behaviorReasons.length ? 'Behavior: ' + behaviorReasons.join('; ') : behaviorHints.length ? 'Clues: ' + behaviorHints.join('; ') : '';
+        reason.hidden = !reason.textContent;
         const crossBtn = card.querySelector('.crossout-btn');
         crossBtn.textContent = manual ? '↶ Restore' : '✕ Cross Out';
         crossBtn.setAttribute('aria-label', (manual ? 'Restore ' : 'Cross out ') + ghost.name);
         crossBtn.setAttribute('aria-pressed', String(manual));
-        if (!isExcluded && !manual) remaining++;
+        if (!isExcluded && !manual && !behaviorExcluded) remaining++;
     });
     document.getElementById('matchCount').textContent = `${remaining} of ${ghosts.length} possible`;
     const meter = document.getElementById('matchProgress');
@@ -1344,6 +1404,8 @@ document.getElementById('clearCrossOuts').addEventListener('click', () => { manu
 
 resetBtn.addEventListener('click', () => {
     manualCrossOuts.clear();
+    Object.keys(eventChecks).forEach(key => delete eventChecks[key]);
+    renderEventCategories();
     evidences.forEach(e => evidenceState[e] = "neutral");
     createEvidenceButtons();
     filterGhosts();
