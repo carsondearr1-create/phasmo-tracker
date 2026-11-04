@@ -567,6 +567,10 @@
 .behavior-reason[hidden] {display:none}
 
 /* Clue-filter switch, separate from evidence and manual cross-outs. */
+.behavior-tip {font-size:.75rem;color:#aebbd0;line-height:1.5}
+.event-category-heading:focus-visible {outline:2px solid #a78bfa;outline-offset:-2px}
+.sidebar .event-category-list {padding-bottom:12px}
+
 .behavior-filter-switch {display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid #6d4c9c;border-radius:8px;background:#261f36;color:#e9d5ff;font-size:.78rem;line-height:1.5;margin-bottom:12px;cursor:pointer}
 .behavior-filter-switch input {accent-color:#a78bfa;margin-top:3px;flex-shrink:0}
 /* Independent desktop scrolling for evidence/tools and ghost cards. */
@@ -616,8 +620,8 @@
     <header class="tracker-header">
   <div class="header-eyebrow">UNOFFICIAL INVESTIGATION DASHBOARD</div>
   <h1>☽ PHASMO TRACKER</h1>
-  <p class="header-subtitle">GHOST EVIDENCE · HUNT INTEL · INVESTIGATION TOOLS</p>
-  <div class="header-pills"><span>30 Ghosts</span><span>Fan-Made</span><span>October 2026 Intel</span></div>
+  <p class="header-subtitle">GHOST EVIDENCE · HUNT INTEL · BEHAVIOR TESTS</p>
+  <div class="header-pills"><span>30 Ghosts</span><span>Fan-Made</span><span>November 2026 Intel</span></div>
   <p class="header-help">Tap evidence once for <b class="found-text">found</b>, twice for <b class="rejected-text">ruled out</b>, and a third time to clear it. Ghosts that don't match fade away.</p>
 </header>
 
@@ -652,33 +656,7 @@
 </details>
 
 <!-- Investigation Tools -->
-<div class="section-title">Investigation Tools</div>
-
-<div class="tool-tabs" role="group" aria-label="Investigation tools">
-    <button type="button" class="tool-tab active"
-            data-panel="investigationPanel" aria-pressed="true">
-        Investigation Checklist
-    </button>
-    <button type="button" class="tool-tab"
-            data-panel="eventsPanel" aria-pressed="false">
-        Events &amp; Behavior
-    </button>
-</div>
-
-<section id="investigationPanel" class="tool-panel">
-    <div class="tool-heading">
-        <div>
-            <h2>Investigation Checklist</h2>
-            <p>Track your tests without changing your evidence journal.</p>
-        </div>
-        <button type="button" class="reset-btn" id="resetInvestigation">
-            Reset
-        </button>
-    </div>
-    <div id="investigationChecklist" class="checklist"></div>
-</section>
-
-<section id="eventsPanel" class="tool-panel" hidden>
+<section id="eventsPanel" class="tool-panel">
     <div class="tool-heading">
         <div>
             <h2>Events &amp; Behavior</h2>
@@ -692,6 +670,7 @@
     <div class="checklist-legend">
         With clue filtering ON, selected clues cross out ghosts that do not match. These are investigative filters, NOT proof; turn the switch off to show only definitive behavior exclusions. Evidence remains separate.
     </div>
+    <p class="behavior-tip">Open a category to see tests. Select an observation to filter ghosts; uncheck it to undo. The Mimic can imitate many behaviors.</p>
     <div id="eventsChecklist" class="event-categories"></div>
 </section>
 
@@ -737,45 +716,6 @@
 { name: "Wraith", evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S. Projector"], intel: ["Will never touch, step in, or interact with placed salt lines.", "Can teleport directly onto a player's coordinates, changing rooms and casting an EMF 2 trail."] },
 { name: "Yokai", evidence: ["Ghost Orb", "Spirit Box", "D.O.T.S. Projector"], intel: ["Highly sensitive to voice chat nearby, unlocking early hunt capabilities.", "Triggers ghost events much closer to a music box (within 2.5m). Thrown music boxes spark events."] },
 { name: "Yurei", evidence: ["Freezing Temps", "Ghost Orb", "D.O.T.S. Projector"], intel: ["The only entity that can fully slam or manipulate facility exit doors outside of events/hunts.", "Interactions fully open or snap doors shut. Snapping doors closed heavily drops nearby player sanity."] }
-];
-
-const investigationItems = [
-    {
-        title: "Locate the ghost room",
-        note: "Use temperature changes, interactions, sounds, and equipment."
-    },
-    {
-        title: "Test Spirit Box",
-        note: "Be near the ghost, turn room lights off, and check the response conditions."
-    },
-    {
-        title: "Check for Ghost Orbs",
-        note: "Review the video feed carefully. Remember The Mimic can show extra orbs."
-    },
-    {
-        title: "Check for Ghost Writing",
-        note: "Place the book in a useful location and allow time for an interaction."
-    },
-    {
-        title: "Test D.O.T.S.",
-        note: "Observe the projector and use a video camera when appropriate."
-    },
-    {
-        title: "Collect UV evidence",
-        note: "Inspect doors, windows, and other touched surfaces promptly."
-    },
-    {
-        title: "Check Freezing Temperatures",
-        note: "Use a thermometer and allow the room temperature to fall."
-    },
-    {
-        title: "Check EMF Level 5",
-        note: "Look for a level 5 reading following a suitable ghost interaction."
-    },
-    {
-        title: "Review remaining ghosts",
-        note: "Compare the evidence and behavioral clues before making a final guess."
-    }
 ];
 
 // Behavior observations are prompts for manual investigation, not automatic exclusions.
@@ -1001,9 +941,62 @@ const behaviorHighlightMap = {
     "Onryo"
   ]
 };
+Object.assign(behaviorHighlightMap, {
+ "D.O.T.S. silhouette visible directly without a camera": [],
+ "Ghost directly switches the breaker ON": [],
+ "Ghost directly switches the breaker OFF": [],
+ "Ghost switches a room light ON": [],
+ "Ghost shows EMF 5, D.O.T.S. or Ghost Writing": [],
+ "Ghost performs a walking-toward-player ghost event": []
+});
 eventCategories.forEach(category => category.items.forEach(item => {
-  item.highlights = behaviorHighlightMap[item.title] || [];
+  item.highlights = item.highlights || behaviorHighlightMap[item.title] || [];
 }));
+
+// Additional carefully qualified observations from Phas Ghost Updates 2.
+const secondUpdateIntel = {
+ "Goryo": ["Seeing a D.O.T.S. silhouette directly with the naked eye rules out Goryo. On 1- or 2-evidence settings, Goryo's D.O.T.S. evidence is forced."],
+ "Hantu": ["Cannot turn the breaker ON. It can turn the breaker OFF, and is more likely to do so than many ghosts."],
+ "Jinn": ["If the ghost itself directly switches the breaker OFF, it is not a Jinn. A breaker trip caused by too many lights is different."],
+ "Kormos": ["Cannot perform a ghost-chase event in which its manifestation walks toward a player; distinguish this from hunts."],
+ "Mare": ["Its immediate light-off ability requires proximity to the light switch (about 4 m). TVs and computers are not the same as room lights; do not use them for an automatic exclusion without verification."],
+ "Moroi": ["Its hunt speed rises as team sanity drops, reaching its highest base speed at very low average sanity."],
+ "Myling": ["Compare footsteps with nearby flashlight flicker during hunts: hearing the ghost only when electronics interfere can suggest Myling, but distance and obstacles matter."],
+ "Obambo": ["Can switch between calm and aggressive states during a hunt; compare hunt speeds and thresholds over time."],
+ "Raiju": ["Compare hunt speed with and without active electronics nearby. Test only from a safe position; do not deliberately attract a hunting ghost to your hiding place."],
+ "Revenant": ["Its sudden change from slow unaware movement to very fast movement after detection differs from gradual line-of-sight acceleration."],
+ "Shade": ["An interaction clearly originating in the same room as a player is evidence against Shade; verify the ghost's actual position first."],
+ "Thaye": ["Two Ouija Board age responses separated by time near the ghost can reveal aging; ordinary ghosts do not age this way."],
+ "The Mimic": ["May imitate Banshee sounds, Poltergeist throws, Demon early hunts, and special evidence-linked behaviors; its official evidence remains UV, Freezing and Spirit Box, plus bonus Orbs."],
+ "The Twins": ["Can hunt at two different base speeds. A speed change alone does not prove Twins."],
+ "Wraith": ["A clearly observed ghost stepping in and disturbing salt rules out Wraith; untouched salt alone does not prove it."],
+ "Phantom": ["Phantom manifestations vanish when successfully photographed; distinguish a successful ghost photo from an empty frame."],
+ "Yokai": ["Its short hunt hearing/electronics detection range is a clue, but it can still see players normally."],
+ "Yurei": ["Incense temporarily restricts roaming; leaving the room or showing D.O.T.S. after incense is not, by itself, a safe automatic exclusion."]
+};
+ghosts.forEach(ghost => {
+ const additions = secondUpdateIntel[ghost.name] || [];
+ additions.forEach(line => { if (!ghost.intel.includes(line)) ghost.intel.push(line); });
+});
+
+// Only observations with reliable, explicit conditions can eliminate a ghost.
+eventCategories.push({ name: "Verified Exclusion Tests", icon: "🚫", items: [
+ { title: "D.O.T.S. silhouette visible directly without a camera", note: "If you clearly see the actual D.O.T.S. silhouette with your naked eye, it cannot be a Goryo.", clue: "Rules out: Goryo", rulesOut: ["Goryo"] },
+ { title: "Ghost directly switches the breaker ON", note: "Confirm it was a ghost interaction, not a player action. Hantu cannot switch it on.", clue: "Rules out: Hantu", rulesOut: ["Hantu"] },
+ { title: "Ghost directly switches the breaker OFF", note: "Confirm a direct ghost interaction, not an electrical overload or player action. Jinn cannot directly turn it off.", clue: "Rules out: Jinn", rulesOut: ["Jinn"] },
+ { title: "Ghost switches a room light ON", note: "Confirm the ghost itself turned a room light on. Mare cannot switch room lights on.", clue: "Rules out: Mare", rulesOut: ["Mare"] },
+ { title: "Ghost shows EMF 5, D.O.T.S. or Ghost Writing", note: "A confirmed one of these is incompatible with The Mimic's official evidence. Use the evidence panel for the definitive evidence filter.", clue: "Rules out: The Mimic", rulesOut: ["The Mimic"] },
+ { title: "Ghost performs a walking-toward-player ghost event", note: "Distinguish a genuine ghost-chase event from a hunt or a stationary event.", clue: "Rules out: Kormos", rulesOut: ["Kormos"] }
+]});
+
+eventCategories.push({ name: "More Identification Clues", icon: "🔍", items: [
+ { title: "Hunt footsteps become audible only near electronics interference", note: "Myling footsteps are comparatively quiet. Compare distances and listen from safety; this is not a definitive test.", clue: "Consider: Myling", highlights: ["Myling"] },
+ { title: "Ghost hunt speed rises near active electronics", note: "Raiju can speed up near active electronic equipment; do not put an active device beside a hiding place to test it.", clue: "Consider: Raiju", highlights: ["Raiju"] },
+ { title: "Ouija Board age changes between readings", note: "A Thaye can age as players spend time nearby. Record readings taken at different times.", clue: "Strong clue: Thaye", highlights: ["Thaye"] },
+ { title: "Ghost alternates between calm and aggressive hunt speeds", note: "Obambo can switch states during a hunt; other ghosts also vary in speed.", clue: "Consider: Obambo", highlights: ["Obambo"] },
+ { title: "Ghost moves very slowly until detecting a player, then instantly accelerates", note: "Revenant has a distinctive sudden speed jump; compare with temperature, electronics and sanity-based speeds.", clue: "Consider: Revenant", highlights: ["Revenant"] },
+ { title: "Ghost speed rises as average sanity drops", note: "Moroi gains base speed at lower average sanity; it is not the only ghost with variable speed.", clue: "Consider: Moroi", highlights: ["Moroi"] }
+]});
 
 // Reviewed against July–October 2026 ghost guides. Normal speeds assume 100% ghost-speed difficulty.
 const ghostHuntSpeeds = {
@@ -1235,84 +1228,10 @@ const resetBtn = document.getElementById('resetBtn');
 const manualCrossOuts = new Set();
 
 /* Investigation tools: separate state from the evidence journal */
-const investigationChecks = {};
+
 const eventChecks = {};
 
-const investigationContainer =
-    document.getElementById("investigationChecklist");
-const eventsContainer =
-    document.getElementById("eventsChecklist");
-
-function renderChecklist(container, items, state, statePrefix) {
-    container.innerHTML = "";
-
-    const progress = document.createElement("p");
-    progress.className = "checklist-progress";
-    progress.setAttribute("aria-live", "polite");
-    container.appendChild(progress);
-    const progressTrack = document.createElement('div');
-    progressTrack.className = 'checklist-progress-track';
-    const progressFill = document.createElement('span');
-    progressTrack.appendChild(progressFill);
-    container.appendChild(progressTrack);
-
-    items.forEach((item, index) => {
-        const key = statePrefix + index;
-
-        if (state[key] === undefined) {
-            state[key] = false;
-        }
-
-        const label = document.createElement("label");
-        label.className = "checklist-item";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = state[key];
-
-        const copy = document.createElement("span");
-        copy.className = "checklist-copy";
-
-        const title = document.createElement("span");
-        title.className = "checklist-title";
-        title.textContent = item.title;
-
-        const note = document.createElement("span");
-        note.className = "checklist-note";
-        note.textContent = item.note;
-
-        copy.appendChild(title);
-        copy.appendChild(note);
-
-        if (item.clue) {
-            const clue = document.createElement("span");
-            clue.className = "checklist-clue";
-            clue.textContent = item.clue;
-            copy.appendChild(clue);
-        }
-
-        checkbox.addEventListener("change", () => {
-            state[key] = checkbox.checked;
-            updateProgress();
-        });
-
-        label.appendChild(checkbox);
-        label.appendChild(copy);
-        container.appendChild(label);
-    });
-
-    function updateProgress() {
-        const completed = items.filter(
-            (_, index) => state[statePrefix + index]
-        ).length;
-
-        progress.textContent =
-            `${completed} of ${items.length} checked`;
-        progressFill.style.width = `${Math.round(100 * completed / items.length)}%`;
-    }
-
-    updateProgress();
-}
+const eventsContainer = document.getElementById("eventsChecklist");
 
 function renderEventCategories() {
     eventsContainer.innerHTML = '';
@@ -1385,37 +1304,7 @@ function renderEventCategories() {
     refreshProgress();
 }
 
-/* Switch between the two panels */
-document.querySelectorAll(".tool-tab").forEach(button => {
-    button.addEventListener("click", () => {
-        const targetId = button.dataset.panel;
-
-        document.querySelectorAll(".tool-tab").forEach(tab => {
-            const active = tab === button;
-            tab.classList.toggle("active", active);
-            tab.setAttribute("aria-pressed", String(active));
-        });
-
-        document.querySelectorAll(".tool-panel").forEach(panel => {
-            panel.hidden = panel.id !== targetId;
-        });
-    });
-});
-
-/* Reset each checklist independently */
-document.getElementById("resetInvestigation")
-    .addEventListener("click", () => {
-        Object.keys(investigationChecks).forEach(
-            key => delete investigationChecks[key]
-        );
-        renderChecklist(
-            investigationContainer,
-            investigationItems,
-            investigationChecks,
-            "investigation-"
-        );
-    });
-
+/* Reset the behavior checklist */
 document.getElementById("resetEvents")
     .addEventListener("click", () => {
         Object.keys(eventChecks).forEach(
@@ -1424,13 +1313,6 @@ document.getElementById("resetEvents")
         renderEventCategories();
         filterGhosts();
     });
-
-renderChecklist(
-    investigationContainer,
-    investigationItems,
-    investigationChecks,
-    "investigation-"
-);
 
 renderEventCategories();
 
